@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import logoEmail from '../assets/email/logo-trex.png'
-import escudoEmail from '../assets/email/escudo.png'
 import { useAuth } from '../context/AuthContext'
 import { confirmarEmail, reenviarCodigo } from '../services/authService'
 
@@ -102,7 +100,7 @@ export default function ConfirmarEmail() {
 
       <article className="gmail-carta">
         <header className="gmail-carta-topo">
-          <img src={logoEmail} alt="" width="56" height="56" />
+          <img src="/email/logo-trex.png" alt="" width="56" height="56" />
           <p className="gmail-marca">DINO PÉDIA</p>
           <p className="gmail-slogan">Descubra. Aprenda. Compartilhe.</p>
         </header>
@@ -113,7 +111,7 @@ export default function ConfirmarEmail() {
           6 dígitos. Ele vale por 10 minutos.
         </p>
         <p className="gmail-seguranca">
-          <img src={escudoEmail} alt="" width="28" height="28" />
+          <img src="/email/escudo.png" alt="" width="28" height="28" />
           Segurança em primeiro lugar. Se você não pediu este código, ignore o
           e-mail.
         </p>

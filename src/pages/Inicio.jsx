@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import trexHero from '../assets/images/hero-trex.png'
 import { listarDestaques, listarDinossauros } from '../services/dinosaurService'
 
 const PERIODOS_VISUAL = [
@@ -43,7 +42,7 @@ export default function Inicio() {
   return (
     <div className="home">
       <section className="hero">
-        <img className="hero-trex" src={trexHero} alt="Tiranossauro rex" />
+        <img className="hero-trex" src="/hero-trex.png" alt="Tiranossauro rex" />
         <div className="hero-sombra" />
 
         <div className="hero-texto">

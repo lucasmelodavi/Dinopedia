@@ -1,10 +1,8 @@
 import { API_URL } from '../services/api'
-import trexOculos from '../assets/avatars/trex-oculos.png'
-import triceratopsOculos from '../assets/avatars/triceratops-oculos.png'
 
 export const AVATARES = [
-  { id: 'trex-oculos', nome: 'T-Rex de óculos', src: trexOculos },
-  { id: 'triceratops-oculos', nome: 'Tricerátops de óculos', src: triceratopsOculos },
+  { id: 'trex-oculos', nome: 'T-Rex de óculos', src: '/avatars/trex-oculos.png' },
+  { id: 'triceratops-oculos', nome: 'Tricerátops de óculos', src: '/avatars/triceratops-oculos.png' },
 ]
 
 export function iniciais(nome = '') {

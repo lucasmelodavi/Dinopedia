@@ -14,19 +14,19 @@ function splitStatements(sql) {
 async function waitForDb() {
     let ultimoErro;
 
-    for (let tentativa = 1; tentativa <= 15; tentativa++) {
+    for (let tentativa = 1; tentativa <= 40; tentativa++) {
         try {
             await pool.query('SELECT 1');
             return;
         } catch (erro) {
             ultimoErro = erro;
-            console.log(`Aguardando PostgreSQL (${tentativa}/15)...`);
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            console.log(`Aguardando PostgreSQL (${tentativa}/40): ${erro.message}`);
+            await new Promise((resolve) => setTimeout(resolve, 3000));
         }
     }
 
     throw new Error(
-        `PostgreSQL indisponível. Suba o banco com docker compose up db. ${ultimoErro.message}`
+        `PostgreSQL indisponível. ${ultimoErro && ultimoErro.message}`
     );
 }
 

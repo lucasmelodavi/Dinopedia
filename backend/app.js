@@ -64,6 +64,6 @@ initDb()
         });
     })
     .catch((erro) => {
-        console.error(erro.message);
+        console.error('Falha ao iniciar o banco:', erro);
         process.exit(1);
     });
