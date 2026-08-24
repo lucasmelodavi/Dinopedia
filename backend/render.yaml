@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: dinopedia-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node app.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: GMAIL_EMAIL
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false

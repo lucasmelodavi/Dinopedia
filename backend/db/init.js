@@ -1,0 +1,55 @@
+const fs = require('fs');
+const path = require('path');
+const pool = require('./pool');
+const { PERIODOS } = require('../config/constants');
+const { seed } = require('./seed');
+
+function splitStatements(sql) {
+    return sql
+        .split(';')
+        .map((statement) => statement.trim())
+        .filter((statement) => statement.length > 0);
+}
+
+async function waitForDb() {
+    let ultimoErro;
+
+    for (let tentativa = 1; tentativa <= 15; tentativa++) {
+        try {
+            await pool.query('SELECT 1');
+            return;
+        } catch (erro) {
+            ultimoErro = erro;
+            console.log(`Aguardando PostgreSQL (${tentativa}/15)...`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+    }
+
+    throw new Error(
+        `PostgreSQL indisponível. Suba o banco com docker compose up db. ${ultimoErro.message}`
+    );
+}
+
+async function initDb() {
+    await waitForDb();
+
+    const schemaPath = path.join(__dirname, 'schema.sql');
+    const sql = fs.readFileSync(schemaPath, 'utf8');
+    const statements = splitStatements(sql);
+
+    for (const statement of statements) {
+        await pool.query(statement);
+    }
+
+    for (const nome of PERIODOS) {
+        await pool.query(
+            'INSERT INTO periodos (nome) VALUES ($1) ON CONFLICT (nome) DO NOTHING',
+            [nome]
+        );
+    }
+
+    console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes)');
+    await seed();
+}
+
+module.exports = { initDb };
