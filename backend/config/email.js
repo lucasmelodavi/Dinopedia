@@ -1,5 +1,8 @@
 const dns = require('dns');
+const { promisify } = require('util');
 const nodemailer = require('nodemailer');
+
+const resolve4 = promisify(dns.resolve4);
 
 if (typeof dns.setDefaultResultOrder === 'function') {
     dns.setDefaultResultOrder('ipv4first');
@@ -26,29 +29,16 @@ function lerGmail() {
     return { user, pass };
 }
 
-function criarTransporter(user, pass, porta) {
-    if (porta === 587) {
-        return nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
-            family: 4,
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 10000,
-            auth: { user, pass }
-        });
-    }
-
+function criarTransporter(user, pass, host) {
     return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host,
         port: 465,
         secure: true,
         family: 4,
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
+        tls: { servername: 'smtp.gmail.com' },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000,
         auth: { user, pass }
     });
 }
@@ -109,17 +99,19 @@ const sendConfirmationEmail = async (email, code, nome) => {
         html: montarHtml({ nome, codigo: code })
     };
 
+    const ips = await resolve4('smtp.gmail.com');
+    const destinos = [...ips, 'smtp.gmail.com'];
     let ultimoErro;
 
-    for (const porta of [465, 587]) {
+    for (const host of destinos) {
         try {
-            const transporter = criarTransporter(user, pass, porta);
+            const transporter = criarTransporter(user, pass, host);
             await transporter.sendMail(mailOptions);
-            console.log(`Email enviado para ${email} pela porta ${porta}`);
+            console.log(`Email enviado para ${email} via ${host}`);
             return;
         } catch (error) {
             ultimoErro = error;
-            console.error(`Erro Gmail porta ${porta}:`, error.message);
+            console.error(`Erro Gmail via ${host}:`, error.message);
         }
     }
 
