@@ -9,10 +9,10 @@ function escapeHtml(valor) {
 }
 
 function lerGmail() {
-    const user = String(process.env.GMAIL_EMAIL || '')
+    const user = String(process.env.GMAIL_EMAIL || 'dinopediad@gmail.com')
         .trim()
         .replace(/^["']|["']$/g, '')
-        .replace(/^GMAIL_EMAIL=/i, '');
+        .replace(/^GMAIL_EMAIL=/i, '') || 'dinopediad@gmail.com';
     const pass = String(process.env.GMAIL_APP_PASSWORD || '')
         .replace(/\s/g, '')
         .replace(/^["']|["']$/g, '')

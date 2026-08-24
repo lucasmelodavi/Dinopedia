@@ -19,9 +19,12 @@ export default function ConfirmarEmail() {
   const [codigo, setCodigo] = useState(codigoGerado)
   const [enviando, setEnviando] = useState(false)
   const [reenviando, setReenviando] = useState(false)
+  const erroGmail = location.state?.emailErro || ''
   const [erro, setErro] = useState(
     emailSaiuNoCadastro === false
-      ? 'O e-mail não saiu. Use o código que aparece abaixo.'
+      ? erroGmail
+        ? `O Gmail não enviou: ${erroGmail}`
+        : 'O e-mail não saiu. Use o código que aparece abaixo.'
       : '',
   )
   const [aviso, setAviso] = useState(
