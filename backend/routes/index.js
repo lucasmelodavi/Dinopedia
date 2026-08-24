@@ -14,7 +14,11 @@ const userRoutes = require('./userRoutes');
 const dinoController = require('../controllers/dinoController');
 const config = require('../config');
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
+    if (String(req.headers.accept || '').includes('text/html')) {
+        return next();
+    }
+
     res.json({
         message: 'Backend do DinoPédia',
         baseUrl: config.publicUrl,

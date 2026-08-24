@@ -1,37 +1,28 @@
+databases:
+  - name: dinopedia-db
+    plan: free
+    postgresMajorVersion: "16"
+    databaseName: dinopedia
+    user: dinopedia
+
 services:
   - type: web
     name: dinopedia
-    runtime: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        sync: false
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-  - type: web
-    name: dinopedia-api
     runtime: node
     plan: free
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: node app.js
+    buildCommand: npm install && npm run build && npm install --prefix backend
+    startCommand: node backend/app.js
     healthCheckPath: /health
     envVars:
       - key: NODE_VERSION
         value: "18"
+      - key: NODE_ENV
+        value: production
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        sync: false
-      - key: PUBLIC_URL
-        sync: false
+        fromDatabase:
+          name: dinopedia-db
+          property: connectionString
       - key: CORS_ORIGIN
-        sync: false
-      - key: GMAIL_EMAIL
-        sync: false
-      - key: GMAIL_APP_PASSWORD
-        sync: false
+        value: "*"
