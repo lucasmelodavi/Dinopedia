@@ -28,9 +28,9 @@ function criarTransporter(user, pass, porta) {
             port: 587,
             secure: false,
             requireTLS: true,
-            connectionTimeout: 20000,
-            greetingTimeout: 20000,
-            socketTimeout: 20000,
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 10000,
             auth: { user, pass }
         });
     }
@@ -39,9 +39,9 @@ function criarTransporter(user, pass, porta) {
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 20000,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         auth: { user, pass }
     });
 }

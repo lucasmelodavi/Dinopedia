@@ -66,30 +66,24 @@ const register = async (req, res) => {
             }
 
             await User.atualizarCodigo(email, codigo, codigoExpira);
-            const envio = await enviarCodigo(email, codigo, existente.nome);
+            enviarCodigo(email, codigo, existente.nome);
             return res.status(200).json({
-                mensagem: envio.enviado
-                    ? `Olá, ${existente.nome}. Enviamos um novo código para ${email}.`
-                    : `Olá, ${existente.nome}. O e-mail não saiu; use o código na tela.`,
+                mensagem: `Olá, ${existente.nome}. Use o código na tela. Se o Gmail chegar, use o do e-mail.`,
                 email,
                 nome: existente.nome,
-                emailEnviado: envio.enviado,
-                emailErro: envio.erro,
-                codigo: envio.enviado ? undefined : codigo
+                emailEnviado: false,
+                codigo
             });
         }
 
-        const envio = await enviarCodigo(email, codigo, nome);
+        enviarCodigo(email, codigo, nome);
 
         res.status(201).json({
-            mensagem: envio.enviado
-                ? `Olá, ${nome}. Enviamos um e-mail para ${email} com o seu código. Abra o Gmail e copie o número.`
-                : `Olá, ${nome}. O e-mail não saiu; use o código na tela.`,
+            mensagem: `Olá, ${nome}. Use o código na tela. Se o Gmail chegar, use o do e-mail.`,
             email,
             nome,
-            emailEnviado: envio.enviado,
-            emailErro: envio.erro,
-            codigo: envio.enviado ? undefined : codigo
+            emailEnviado: false,
+            codigo
         });
     } catch (erro) {
         const status = erro.message === 'Email já cadastrado' ? 400 : 500;
@@ -185,17 +179,14 @@ const reenviarCodigo = async (req, res) => {
         const codigo = gerarCodigo();
         const codigoExpira = Date.now() + 600000;
         await User.atualizarCodigo(email, codigo, codigoExpira);
-        const envio = await enviarCodigo(email, codigo, usuario.nome);
+        enviarCodigo(email, codigo, usuario.nome);
 
         res.json({
-            mensagem: envio.enviado
-                ? `Novo código enviado para ${email}. Abra o Gmail.`
-                : 'Novo código gerado. O email não saiu; use o código abaixo.',
+            mensagem: `Use o código na tela. Se o Gmail chegar, use o do e-mail.`,
             email,
             nome: usuario.nome,
-            emailEnviado: envio.enviado,
-            emailErro: envio.erro,
-            codigo: envio.enviado ? undefined : codigo
+            emailEnviado: false,
+            codigo
         });
     } catch (erro) {
         res.status(500).json({ erro: 'Erro ao reenviar código' });
