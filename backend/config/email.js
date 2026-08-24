@@ -1,4 +1,9 @@
+const dns = require('dns');
 const nodemailer = require('nodemailer');
+
+if (typeof dns.setDefaultResultOrder === 'function') {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 function escapeHtml(valor) {
     return String(valor || '')
@@ -28,6 +33,7 @@ function criarTransporter(user, pass, porta) {
             port: 587,
             secure: false,
             requireTLS: true,
+            family: 4,
             connectionTimeout: 10000,
             greetingTimeout: 10000,
             socketTimeout: 10000,
@@ -39,6 +45,7 @@ function criarTransporter(user, pass, porta) {
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
+        family: 4,
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 10000,
