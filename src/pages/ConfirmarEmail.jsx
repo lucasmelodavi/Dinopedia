@@ -26,9 +26,9 @@ export default function ConfirmarEmail() {
   )
   const [aviso, setAviso] = useState(
     emailSaiuNoCadastro === false && codigoGerado
-      ? `O e-mail não saiu. Use este código: ${codigoGerado}`
+      ? `O Gmail ainda não enviou. Use este código: ${codigoGerado}`
       : emailSaiuNoCadastro === true
-        ? `Enviamos o código para ${emailInicial}. Abra o Gmail (e o Spam) e cole aqui.`
+        ? `Enviamos o código para ${emailInicial}. Abra o Gmail e olhe também o Spam.`
         : location.state?.mensagem || '',
   )
 

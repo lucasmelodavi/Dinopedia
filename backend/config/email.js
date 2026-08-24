@@ -1,4 +1,3 @@
-const path = require('path');
 const nodemailer = require('nodemailer');
 
 function escapeHtml(valor) {
@@ -9,24 +8,43 @@ function escapeHtml(valor) {
         .replace(/"/g, '&quot;');
 }
 
-const createEmailTransporter = () => {
-    const user = (process.env.GMAIL_EMAIL || '').trim();
-    const pass = (process.env.GMAIL_APP_PASSWORD || '').replace(/\s/g, '');
+function lerGmail() {
+    const user = String(process.env.GMAIL_EMAIL || '')
+        .trim()
+        .replace(/^["']|["']$/g, '')
+        .replace(/^GMAIL_EMAIL=/i, '');
+    const pass = String(process.env.GMAIL_APP_PASSWORD || '')
+        .replace(/\s/g, '')
+        .replace(/^["']|["']$/g, '')
+        .replace(/^GMAIL_APP_PASSWORD=/i, '');
 
-    if (!user || !pass) {
-        throw new Error('Gmail da DinoPédia ainda não está configurado no servidor.');
+    return { user, pass };
+}
+
+function criarTransporter(user, pass, porta) {
+    if (porta === 587) {
+        return nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            connectionTimeout: 20000,
+            greetingTimeout: 20000,
+            socketTimeout: 20000,
+            auth: { user, pass }
+        });
     }
 
     return nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000,
+        connectionTimeout: 20000,
+        greetingTimeout: 20000,
+        socketTimeout: 20000,
         auth: { user, pass }
     });
-};
+}
 
 function montarHtml({ nome, codigo }) {
     const primeiroNome = escapeHtml(String(nome || 'Survivor').split(' ')[0]);
@@ -34,11 +52,10 @@ function montarHtml({ nome, codigo }) {
 
     return `
       <div style="margin:0;padding:24px;background:#0b0d0b;font-family:Arial,Helvetica,sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;margin:0 auto;background:#121612;border:1px solid #5ea33a;border-radius:16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;margin:0 auto;background:#121612;border:1px solid #5ea33a;">
           <tr>
             <td style="padding:28px 28px 8px;" align="center">
-              <img src="cid:logo-trex" width="64" height="64" alt="DinoPédia" style="display:block;border:0;border-radius:14px;" />
-              <p style="margin:12px 0 0;color:#7cc04f;font-size:20px;font-weight:800;letter-spacing:0.12em;">DINO PÉDIA</p>
+              <p style="margin:0;color:#7cc04f;font-size:20px;font-weight:800;letter-spacing:0.12em;">DINO PÉDIA</p>
               <p style="margin:4px 0 0;color:#b7c2b0;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;">Descubra. Aprenda. Compartilhe.</p>
             </td>
           </tr>
@@ -59,62 +76,47 @@ function montarHtml({ nome, codigo }) {
               <p style="margin:0 0 18px;text-align:center;color:#7cc04f;font-size:13px;">
                 Este código é válido por 10 minutos.
               </p>
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#0e130e;border:1px solid #5ea33a47;">
-                <tr>
-                  <td style="padding:14px 12px;width:52px;vertical-align:top;">
-                    <img src="cid:escudo" width="36" height="36" alt="" style="display:block;border:0;border-radius:50%;" />
-                  </td>
-                  <td style="padding:14px 16px 14px 0;color:#b7c2b0;font-size:13px;line-height:1.45;">
-                    <strong style="color:#7cc04f;">Segurança em primeiro lugar.</strong>
-                    Se você não solicitou este código, ignore este e-mail ou altere sua senha imediatamente.
-                  </td>
-                </tr>
-              </table>
               <p style="margin:22px 0 0;color:#dbe6d4;font-size:14px;line-height:1.5;">
-                Obrigado,<br />Equipe DinoPédia &#129430;
+                Obrigado,<br />Equipe DinoPédia
               </p>
             </td>
           </tr>
         </table>
-        <p style="max-width:560px;margin:16px auto 0;text-align:center;color:#7d8778;font-size:12px;line-height:1.5;">
-          &copy; 2026 DinoPédia. Todos os direitos reservados.
-        </p>
       </div>
     `;
 }
 
 const sendConfirmationEmail = async (email, code, nome) => {
-    const transporter = createEmailTransporter();
-    const primeiroNome = String(nome || 'Survivor').split(' ')[0];
-    const pasta = path.join(__dirname, '..', 'assets', 'email');
+    const { user, pass } = lerGmail();
 
+    if (!user || !pass) {
+        throw new Error('Falta GMAIL_EMAIL ou GMAIL_APP_PASSWORD no Render.');
+    }
+
+    const primeiroNome = String(nome || 'Survivor').split(' ')[0];
     const mailOptions = {
-        from: `"DinoPédia" <${process.env.GMAIL_EMAIL}>`,
+        from: `"DinoPédia" <${user}>`,
         to: email,
         subject: 'Seu código de verificação do DinoPédia',
         text: `Olá, ${primeiroNome}!\n\nSeu código de verificação do DinoPédia é: ${code}\n\nEle vale por 10 minutos.\nSe você não pediu este código, ignore este e-mail.\n\nEquipe DinoPédia`,
-        html: montarHtml({ nome, codigo: code }),
-        attachments: [
-            {
-                filename: 'logo-trex.png',
-                path: path.join(pasta, 'logo-trex.png'),
-                cid: 'logo-trex'
-            },
-            {
-                filename: 'escudo.png',
-                path: path.join(pasta, 'escudo.png'),
-                cid: 'escudo'
-            }
-        ]
+        html: montarHtml({ nome, codigo: code })
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email personalizado enviado para ${email}`);
-    } catch (error) {
-        console.error('Erro ao enviar email:', error);
-        throw error;
+    let ultimoErro;
+
+    for (const porta of [465, 587]) {
+        try {
+            const transporter = criarTransporter(user, pass, porta);
+            await transporter.sendMail(mailOptions);
+            console.log(`Email enviado para ${email} pela porta ${porta}`);
+            return;
+        } catch (error) {
+            ultimoErro = error;
+            console.error(`Erro Gmail porta ${porta}:`, error.message);
+        }
     }
+
+    throw ultimoErro;
 };
 
 module.exports = {
