@@ -13,10 +13,17 @@ const createEmailTransporter = () => {
     const user = (process.env.GMAIL_EMAIL || '').trim();
     const pass = (process.env.GMAIL_APP_PASSWORD || '').replace(/\s/g, '');
 
+    if (!user || !pass) {
+        throw new Error('Gmail da DinoPédia ainda não está configurado no servidor.');
+    }
+
     return nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
         auth: { user, pass }
     });
 };

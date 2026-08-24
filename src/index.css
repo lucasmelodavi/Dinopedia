@@ -264,6 +264,19 @@ a {
   font-size: 1.5rem;
 }
 
+.codigo-grande {
+  margin: 16px 0 0;
+  padding: 16px 12px;
+  text-align: center;
+  letter-spacing: 0.35em;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--green-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0e130e;
+}
+
 .alerta,
 .aviso {
   margin: 0 0 10px;

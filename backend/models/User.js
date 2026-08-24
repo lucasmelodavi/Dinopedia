@@ -117,7 +117,7 @@ class User {
 
     static async buscarPorEmail(email) {
         const resultado = await pool.query(
-            'SELECT * FROM usuarios WHERE email = $1',
+            'SELECT * FROM usuarios WHERE LOWER(email) = LOWER($1)',
             [email]
         );
         return User.mapear(resultado.rows[0]);

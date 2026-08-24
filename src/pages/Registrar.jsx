@@ -40,8 +40,8 @@ export default function Registrar() {
     <section className="pagina">
       <h1>Criar conta</h1>
       <p>
-        A pessoa coloca o Gmail dela. O app manda o código de 6 dígitos para
-        esse mesmo Gmail.
+        A pessoa coloca o e-mail dela. Se o Gmail não chegar, o código aparece
+        na próxima tela.
       </p>
 
       <form className="formulario cartao" onSubmit={handleSubmit}>
@@ -86,7 +86,7 @@ export default function Registrar() {
         </label>
 
         <button className="botao" type="submit" disabled={enviando}>
-          {enviando ? 'Criando...' : 'Criar conta'}
+          {enviando ? 'Criando... aguarde uns segundos' : 'Criar conta'}
         </button>
 
         <p className="form-links">

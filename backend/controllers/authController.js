@@ -35,7 +35,8 @@ async function enviarCodigo(email, codigo, nome) {
 
 const register = async (req, res) => {
     try {
-        const { nome, email, senha } = req.body;
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const { nome, senha } = req.body;
 
         if (!nome || !email || !senha) {
             return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
@@ -45,14 +46,38 @@ const register = async (req, res) => {
         const codigo = gerarCodigo();
         const codigoExpira = Date.now() + 600000;
 
-        await User.criar({
-            nome,
-            email,
-            senha: senhaCriptografada,
-            confirmado: false,
-            codigoConfirmacao: codigo,
-            codigoExpira
-        });
+        try {
+            await User.criar({
+                nome,
+                email,
+                senha: senhaCriptografada,
+                confirmado: false,
+                codigoConfirmacao: codigo,
+                codigoExpira
+            });
+        } catch (erro) {
+            if (erro.message !== 'Email já cadastrado') {
+                throw erro;
+            }
+
+            const existente = await User.buscarPorEmail(email);
+            if (!existente || existente.confirmado) {
+                return res.status(400).json({ erro: 'Email já cadastrado. Entre com sua senha.' });
+            }
+
+            await User.atualizarCodigo(email, codigo, codigoExpira);
+            const envio = await enviarCodigo(email, codigo, existente.nome);
+            return res.status(200).json({
+                mensagem: envio.enviado
+                    ? `Olá, ${existente.nome}. Enviamos um novo código para ${email}.`
+                    : `Olá, ${existente.nome}. O e-mail não saiu; use o código na tela.`,
+                email,
+                nome: existente.nome,
+                emailEnviado: envio.enviado,
+                emailErro: envio.erro,
+                codigo: envio.enviado ? undefined : codigo
+            });
+        }
 
         const envio = await enviarCodigo(email, codigo, nome);
 
@@ -74,7 +99,8 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, senha } = req.body;
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const { senha } = req.body;
 
         if (!email || !senha) {
             return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
@@ -106,7 +132,8 @@ const login = async (req, res) => {
 
 const confirmarEmail = async (req, res) => {
     try {
-        const { email, codigo } = req.body;
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const { codigo } = req.body;
 
         const usuario = await User.buscarPorEmail(email);
 
@@ -139,7 +166,7 @@ const confirmarEmail = async (req, res) => {
 
 const reenviarCodigo = async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = String(req.body.email || '').trim().toLowerCase();
 
         if (!email) {
             return res.status(400).json({ erro: 'Email é obrigatório' });

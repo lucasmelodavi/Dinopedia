@@ -16,7 +16,7 @@ export default function ConfirmarEmail() {
 
   const [email, setEmail] = useState(emailInicial)
   const [nome, setNome] = useState(nomeInicial)
-  const [codigo, setCodigo] = useState('')
+  const [codigo, setCodigo] = useState(codigoGerado)
   const [enviando, setEnviando] = useState(false)
   const [reenviando, setReenviando] = useState(false)
   const [erro, setErro] = useState(
@@ -107,9 +107,12 @@ export default function ConfirmarEmail() {
         <p className="gmail-assunto">Seu código de verificação do DinoPédia</p>
         <p className="gmail-meta">De: DinoPédia · Para: {email || 'seu e-mail'}</p>
         <p>
-          Olá, <strong>{primeiroNome}</strong>! Abra o Gmail e copie o código de
-          6 dígitos. Ele vale por 10 minutos.
+          Olá, <strong>{primeiroNome}</strong>! Se o e-mail não chegar, use o
+          código que aparece nesta tela. Ele vale por 10 minutos.
         </p>
+        {codigoLimpo.length === 6 ? (
+          <p className="codigo-grande">{codigoLimpo}</p>
+        ) : null}
         <p className="gmail-seguranca">
           <img src="/email/escudo.png" alt="" width="28" height="28" />
           Segurança em primeiro lugar. Se você não pediu este código, ignore o
