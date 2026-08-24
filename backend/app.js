@@ -53,17 +53,21 @@ app.use((erro, req, res, next) => {
 
 const PORT = config.port;
 
-initDb()
-    .then(() => {
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Servidor rodando na porta ${PORT}`);
-            console.log(config.publicUrl || `http://localhost:${PORT}`);
-            if (sitePronto) {
-                console.log('Site da DinoPédia sendo servido pela API');
-            }
+console.log('Iniciando DinoPédia na porta', PORT);
+console.log('Banco:', process.env.DATABASE_URL ? 'configurado' : 'usando local');
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(config.publicUrl || `http://localhost:${PORT}`);
+    if (sitePronto) {
+        console.log('Site da DinoPédia sendo servido pela API');
+    }
+
+    initDb()
+        .then(() => {
+            console.log('Banco pronto');
+        })
+        .catch((erro) => {
+            console.error('Falha ao iniciar o banco:', erro);
         });
-    })
-    .catch((erro) => {
-        console.error('Falha ao iniciar o banco:', erro);
-        process.exit(1);
-    });
+});

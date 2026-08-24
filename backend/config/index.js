@@ -19,15 +19,5 @@ const config = {
     },
     emailCriador: 'lucasmelodavi425@gmail.com'
 };
-    databaseUrl:
-        process.env.DATABASE_URL ||
-        'postgres://dinopedia:dinopedia@localhost:55432/dinopedia',
-    cors: {
-        origin: process.env.CORS_ORIGIN || '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization']
-    },
-    emailCriador: 'lucasmelodavi425@gmail.com'
-};
 
 module.exports = config;
