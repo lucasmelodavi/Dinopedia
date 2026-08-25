@@ -15,6 +15,7 @@ export const FAMILIAS = [
   'Spinosauridae',
   'Abelisauridae',
   'Herrerasauridae',
+  'Plateosauridae',
   'Sauropoda',
   'Titanosauria',
   'Ceratopsia',

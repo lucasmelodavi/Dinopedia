@@ -307,7 +307,7 @@ export default function Perfil() {
 
   return (
     <section className="pagina pagina-perfil">
-      <article className="perfil-cartao perfil-resumo">
+      <article className="perfil-cartao perfil-resumo" id="configuracoes">
         <div className="perfil-identidade">
           <Avatar usuario={perfil} />
           <div>
@@ -391,7 +391,7 @@ export default function Perfil() {
           </div>
         </div>
 
-        <ul className="perfil-stats">
+        <ul className="perfil-stats" id="meus-topicos">
           <li>
             <strong>{perfil?.pontos || 0}</strong>
             <span>
@@ -432,7 +432,7 @@ export default function Perfil() {
           <GraficoAtividade meses={meses} />
         </article>
 
-        <article className="perfil-cartao">
+        <article className="perfil-cartao" id="edicoes">
           <div className="perfil-cartao-topo">
             <h2>Edições recentes</h2>
           </div>
