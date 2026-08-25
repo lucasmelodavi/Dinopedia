@@ -50,7 +50,11 @@ export async function request(path, { method = 'GET', body, isForm = false } = {
   const dados = await resposta.json().catch(() => ({}))
 
   if (!resposta.ok) {
-    const erro = new Error(dados.erro || `Erro ${resposta.status}`)
+    const fallback =
+      resposta.status === 503 || resposta.status === 500
+        ? 'Não deu para entrar agora. Se estiver no computador, o banco local pode estar desligado — abra https://dinopedia.onrender.com'
+        : `Erro ${resposta.status}`
+    const erro = new Error(dados.erro || fallback)
     erro.status = resposta.status
     erro.email = dados.email
     erro.codigo = dados.codigo

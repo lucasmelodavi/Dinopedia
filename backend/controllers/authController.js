@@ -11,6 +11,14 @@ function gerarCodigo() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+function mensagemErroBanco(erro) {
+    const texto = String((erro && (erro.message || erro.code)) || erro || '');
+    if (/ECONNREFUSED|ENOTFOUND|ECONNRESET|timeout|connect|57P01|53300|indispon/i.test(texto)) {
+        return 'O banco de dados não está ligado. No celular use https://dinopedia.onrender.com. No PC, ligue o PostgreSQL e tente de novo.';
+    }
+    return null;
+}
+
 function emitirSessao(usuario) {
     const token = jwt.sign({ id: usuario.id }, config.jwtSecret, {
         expiresIn: config.jwtExpiresIn
@@ -118,18 +126,27 @@ const login = async (req, res) => {
             });
         }
 
+        if (!usuario.senha) {
+            return res.status(401).json({ erro: 'Senha incorreta' });
+        }
+
         const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
         if (!senhaCorreta) {
             return res.status(401).json({ erro: 'Senha incorreta' });
         }
 
         res.json(emitirSessao(usuario));
-        Pontos.sincronizarUsuario(usuario.id).catch((erro) => {
-            console.error('Pontos no login:', erro.message);
+        Pontos.sincronizarUsuario(usuario.id).catch((falha) => {
+            console.error('Pontos no login:', falha.message);
         });
     } catch (erro) {
-        console.error('Erro ao fazer login:', erro.message);
-        res.status(500).json({ erro: 'Erro ao fazer login' });
+        const detalhe = erro && erro.message ? erro.message : String(erro || '');
+        console.error('Erro ao fazer login:', detalhe);
+        if (res.headersSent) return;
+        const banco = mensagemErroBanco(erro);
+        res.status(banco ? 503 : 500).json({
+            erro: banco || 'Erro ao fazer login'
+        });
     }
 };
 
