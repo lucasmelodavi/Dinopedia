@@ -1,5 +1,6 @@
 const pool = require('../db/pool');
 const config = require('../config');
+const { resumir } = require('../config/pontos');
 
 const AVATARES_VALIDOS = [
     'trex-oculos',
@@ -26,7 +27,8 @@ class User {
             codigoConfirmacao: row.codigo_confirmacao,
             codigoExpira: row.codigo_expira,
             foto: row.foto || null,
-            descricao: row.descricao || ''
+            descricao: row.descricao || '',
+            pontos: Number(row.pontos) || 0
         };
     }
 
@@ -45,7 +47,9 @@ class User {
             foto,
             fotoUrl,
             descricao: usuario.descricao || '',
-            criador: User.ehCriador(usuario.email)
+            criador: User.ehCriador(usuario.email),
+            pontos: Number(usuario.pontos) || 0,
+            nivel: resumir(usuario.pontos)
         };
     }
 
@@ -58,7 +62,9 @@ class User {
             foto: publico.foto,
             fotoUrl: publico.fotoUrl,
             descricao: publico.descricao,
-            criador: publico.criador
+            criador: publico.criador,
+            pontos: publico.pontos,
+            nivel: publico.nivel
         };
     }
 
@@ -75,7 +81,7 @@ class User {
         valores.push(teto);
 
         const resultado = await pool.query(
-            `SELECT id, nome, foto, email
+            `SELECT id, nome, foto, email, pontos
              FROM usuarios
              WHERE ${condicoes.join(' AND ')}
              ORDER BY nome ASC
@@ -83,7 +89,7 @@ class User {
             valores
         );
 
-        return resultado.rows.map((row) => User.visivel(User.mapear({ ...row, email: null })));
+        return resultado.rows.map((row) => User.visivel(User.mapear(row)));
     }
 
     static async criar({

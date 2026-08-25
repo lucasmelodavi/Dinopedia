@@ -7,6 +7,7 @@ const {
     CATEGORIAS_TOPICO,
     FAMILIAS
 } = require('../config/constants');
+const { REGRAS, NIVEIS } = require('../config/pontos');
 
 const authRoutes = require('./authRoutes');
 const dinoRoutes = require('./dinoRoutes');
@@ -45,6 +46,7 @@ router.get('/', (req, res, next) => {
             ],
             usuarios: [
                 'GET /usuarios',
+                'GET /usuarios/ranking',
                 'GET /usuarios/:id',
                 'GET /usuarios/:id/seguidores',
                 'GET /usuarios/:id/seguindo',
@@ -82,7 +84,15 @@ router.get('/opcoes', (req, res) => {
         periodos: PERIODOS,
         dietas: DIETAS,
         categoriasTopico: CATEGORIAS_TOPICO,
-        familias: FAMILIAS
+        familias: FAMILIAS,
+        pontos: {
+            regras: Object.entries(REGRAS).map(([tipo, regra]) => ({
+                tipo,
+                pontos: regra.pontos,
+                label: regra.label
+            })),
+            niveis: NIVEIS
+        }
     });
 });
 

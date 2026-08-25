@@ -48,8 +48,11 @@ async function initDb() {
         );
     }
 
-    console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes, imagens)');
+    console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes, imagens, pontos)');
     await seed();
+    const Pontos = require('../models/Pontos');
+    await Pontos.sincronizar();
+    console.log('Pontos sincronizados');
 }
 
 module.exports = { initDb };

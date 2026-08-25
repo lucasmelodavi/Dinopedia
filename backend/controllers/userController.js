@@ -1,18 +1,21 @@
 const User = require('../models/User');
 const Follow = require('../models/Follow');
 const Edicao = require('../models/Edicao');
+const Pontos = require('../models/Pontos');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
-    const [edicoes, contagem, seguidores, seguindo] = await Promise.all([
-        Edicao.listarPorUsuario(usuario.id),
-        Follow.contar(usuario.id),
-        Follow.listarSeguidores(usuario.id),
-        Follow.listarSeguindo(usuario.id)
+    const atual = (await User.buscarPorId(usuario.id)) || usuario;
+    const [edicoes, contagem, seguidores, seguindo, historicoPontos] = await Promise.all([
+        Edicao.listarPorUsuario(atual.id),
+        Follow.contar(atual.id),
+        Follow.listarSeguidores(atual.id),
+        Follow.listarSeguindo(atual.id),
+        Pontos.listarPorUsuario(atual.id)
     ]);
 
-    const visivel = comEmail ? User.publico(usuario) : User.visivel(usuario);
+    const visivel = comEmail ? User.publico(atual) : User.visivel(atual);
     const seguindoEste = visitanteId
-        ? await Follow.estaSeguindo(visitanteId, usuario.id)
+        ? await Follow.estaSeguindo(visitanteId, atual.id)
         : false;
 
     return {
@@ -20,13 +23,15 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         edicoes,
         seguidores,
         seguindo,
+        historicoPontos,
         estatisticas: {
             edicoes: edicoes.length,
             seguidores: contagem.seguidores,
-            seguindo: contagem.seguindo
+            seguindo: contagem.seguindo,
+            pontos: visivel.pontos
         },
         seguindoEste,
-        eEu: Boolean(visitanteId && Number(visitanteId) === Number(usuario.id))
+        eEu: Boolean(visitanteId && Number(visitanteId) === Number(atual.id))
     };
 }
 
@@ -56,6 +61,24 @@ const listarUsuarios = async (req, res) => {
         res.json({ data: usuarios });
     } catch (erro) {
         res.status(500).json({ erro: 'Erro ao listar usuários' });
+    }
+};
+
+const ranking = async (req, res) => {
+    try {
+        const { REGRAS, NIVEIS } = require('../config/pontos');
+        const data = await Pontos.ranking(req.query.limit);
+        res.json({
+            data,
+            regras: Object.entries(REGRAS).map(([tipo, regra]) => ({
+                tipo,
+                pontos: regra.pontos,
+                label: regra.label
+            })),
+            niveis: NIVEIS
+        });
+    } catch (erro) {
+        res.status(500).json({ erro: 'Erro ao montar o ranking' });
     }
 };
 
@@ -125,6 +148,7 @@ const deixarDeSeguir = async (req, res) => {
 module.exports = {
     montarPerfil,
     listarUsuarios,
+    ranking,
     buscarUsuario,
     listarSeguidores,
     listarSeguindo,

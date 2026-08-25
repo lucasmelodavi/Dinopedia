@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CATEGORIAS_TOPICO, DIETAS, FAMILIAS, PERIODOS } from '../constants'
 import { useAuth } from '../context/AuthContext'
+import { getPerfil } from '../services/authService'
 import {
   atualizarDinossauro,
+  atualizarTopico,
   buscarDinossauro,
   criarDinossauro,
   criarTopico,
+  deletarTopico,
   enviarFoto,
 } from '../services/dinosaurService'
 
@@ -23,21 +26,34 @@ const VAZIO = {
   destaque: false,
 }
 
+function novaCuriosidade() {
+  return {
+    localId: `novo-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    id: null,
+    categoria: 'Curiosidade',
+    texto: '',
+  }
+}
+
 export default function CadastroDinossauro() {
   const { id } = useParams()
   const editando = Boolean(id)
   const navigate = useNavigate()
-  const { autenticado, carregando } = useAuth()
+  const { autenticado, carregando, atualizarUsuario } = useAuth()
   const [ficha, setFicha] = useState(VAZIO)
   const [foto, setFoto] = useState(null)
   const [preview, setPreview] = useState('')
-  const [topicoCategoria, setTopicoCategoria] = useState(CATEGORIAS_TOPICO[4])
-  const [topicoTexto, setTopicoTexto] = useState('')
+  const [topicos, setTopicos] = useState([novaCuriosidade()])
+  const [topicosRemovidos, setTopicosRemovidos] = useState([])
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    if (!editando) return
+    if (!editando) {
+      setTopicos([novaCuriosidade()])
+      setTopicosRemovidos([])
+      return
+    }
 
     buscarDinossauro(id)
       .then((dino) => {
@@ -54,6 +70,14 @@ export default function CadastroDinossauro() {
           destaque: Boolean(dino.destaque),
         })
         if (dino.fotoUrl) setPreview(dino.fotoUrl)
+        const existentes = (dino.topicos || []).map((topico) => ({
+          localId: `salvo-${topico.id}`,
+          id: topico.id,
+          categoria: topico.categoria || 'Curiosidade',
+          texto: topico.texto || '',
+        }))
+        setTopicos(existentes.length ? existentes : [novaCuriosidade()])
+        setTopicosRemovidos([])
       })
       .catch((falha) => setErro(falha.message || 'Não foi possível carregar a ficha.'))
   }, [editando, id])
@@ -70,6 +94,26 @@ export default function CadastroDinossauro() {
     const arquivo = evento.target.files?.[0]
     setFoto(arquivo || null)
     setPreview(arquivo ? URL.createObjectURL(arquivo) : preview)
+  }
+
+  function handleTopico(localId, campo, valor) {
+    setTopicos((atual) =>
+      atual.map((topico) => (topico.localId === localId ? { ...topico, [campo]: valor } : topico)),
+    )
+  }
+
+  function adicionarCuriosidade() {
+    setTopicos((atual) => [...atual, novaCuriosidade()])
+  }
+
+  function removerCuriosidade(topico) {
+    if (topico.id) {
+      setTopicosRemovidos((atual) => [...atual, topico.id])
+    }
+    setTopicos((atual) => {
+      const resto = atual.filter((item) => item.localId !== topico.localId)
+      return resto.length ? resto : [novaCuriosidade()]
+    })
   }
 
   async function handleSubmit(evento) {
@@ -91,6 +135,15 @@ export default function CadastroDinossauro() {
     }
 
     try {
+      const incompletos = topicos.some((topico) => {
+        const texto = topico.texto.trim()
+        return texto.length > 0 && texto.length < 20
+      })
+
+      if (incompletos) {
+        throw new Error('A curiosidade precisa ter no mínimo 20 caracteres, ou deixe em branco.')
+      }
+
       const resposta = editando
         ? await atualizarDinossauro(id, dados)
         : await criarDinossauro(dados)
@@ -102,11 +155,32 @@ export default function CadastroDinossauro() {
         await enviarFoto(dinoId, foto)
       }
 
-      if (!editando && topicoTexto.trim().length >= 20 && dinoId) {
-        await criarTopico(dinoId, {
-          categoria: topicoCategoria,
-          texto: topicoTexto.trim(),
-        })
+      for (const topicoId of topicosRemovidos) {
+        await deletarTopico(dinoId, topicoId)
+      }
+
+      for (const topico of topicos) {
+        const texto = topico.texto.trim()
+        if (texto.length < 20) continue
+
+        if (topico.id) {
+          await atualizarTopico(dinoId, topico.id, {
+            categoria: topico.categoria,
+            texto,
+          })
+        } else {
+          await criarTopico(dinoId, {
+            categoria: topico.categoria,
+            texto,
+          })
+        }
+      }
+
+      try {
+        const perfilAtual = await getPerfil()
+        atualizarUsuario(perfilAtual)
+      } catch {
+        /* o header atualiza no próximo carregamento */
       }
 
       navigate(`/dinossauros/${dinoId}`)
@@ -146,8 +220,9 @@ export default function CadastroDinossauro() {
     <section className="pagina">
       <h1>{editando ? 'Editar dinossauro' : 'Adicionar dinossauro'}</h1>
       <p>
-        Preencha a ficha como nos cards da home: nome, nome científico, período,
-        dieta e uma foto.
+        {editando
+          ? 'Altere a ficha e as curiosidades: alimentação, fósseis, comportamento e aparência.'
+          : 'Preencha a ficha como nos cards da home: nome, nome científico, período, dieta e uma foto.'}
       </p>
 
       <form className="formulario form-ficha cartao" onSubmit={handleSubmit}>
@@ -267,32 +342,52 @@ export default function CadastroDinossauro() {
           />
         </label>
 
-        {!editando ? (
-          <>
-            <label className="campo">
-              Categoria da curiosidade
-              <select
-                value={topicoCategoria}
-                onChange={(evento) => setTopicoCategoria(evento.target.value)}
+        <div className="bloco-curiosidades">
+          <div className="bloco-curiosidades-topo">
+            <h2>Curiosidades</h2>
+            <button type="button" className="botao botao-fantasma" onClick={adicionarCuriosidade}>
+              Adicionar curiosidade
+            </button>
+          </div>
+          <p className="bloco-curiosidades-ajuda">
+            {editando
+              ? 'Edite o texto, troque a categoria ou apague. Também dá para incluir uma nova.'
+              : 'Opcional. Mínimo de 20 caracteres para salvar cada curiosidade.'}
+          </p>
+          {topicos.map((topico, indice) => (
+            <div key={topico.localId} className="cartao-curiosidade">
+              <label className="campo">
+                Categoria {topicos.length > 1 ? indice + 1 : ''}
+                <select
+                  value={topico.categoria}
+                  onChange={(evento) => handleTopico(topico.localId, 'categoria', evento.target.value)}
+                >
+                  {CATEGORIAS_TOPICO.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className="botao botao-fantasma"
+                onClick={() => removerCuriosidade(topico)}
               >
-                {CATEGORIAS_TOPICO.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="campo campo-largo">
-              Curiosidade (opcional, mínimo 20 caracteres)
-              <textarea
-                rows="3"
-                value={topicoTexto}
-                onChange={(evento) => setTopicoTexto(evento.target.value)}
-                placeholder="Uma curiosidade sobre fósseis, alimentação ou aparência."
-              />
-            </label>
-          </>
-        ) : null}
+                Apagar
+              </button>
+              <label className="campo campo-largo">
+                Texto
+                <textarea
+                  rows="3"
+                  value={topico.texto}
+                  onChange={(evento) => handleTopico(topico.localId, 'texto', evento.target.value)}
+                  placeholder="Uma curiosidade sobre fósseis, alimentação ou aparência."
+                />
+              </label>
+            </div>
+          ))}
+        </div>
 
         <div className="busca-acoes campo-largo">
           <button className="botao" type="submit" disabled={enviando}>

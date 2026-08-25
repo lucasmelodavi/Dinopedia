@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Imagem = require('../models/Imagem');
+const Pontos = require('../models/Pontos');
 const { montarPerfil } = require('./userController');
 const config = require('../config');
 const { sendConfirmationEmail } = require('../config/email');
@@ -149,10 +150,12 @@ const confirmarEmail = async (req, res) => {
         }
 
         const confirmado = await User.confirmarEmail(email);
+        await Pontos.ganhar(confirmado.id, 'confirmar', 'conta');
+        const atualizado = await User.buscarPorId(confirmado.id);
 
         res.json({
             mensagem: 'Email confirmado com sucesso!',
-            ...emitirSessao(confirmado)
+            ...emitirSessao(atualizado)
         });
     } catch (erro) {
         res.status(500).json({ erro: 'Erro ao confirmar email' });
@@ -257,7 +260,9 @@ const uploadFotoPerfil = async (req, res) => {
         }
 
         const caminhoFoto = await Imagem.persistirMulter(req.file);
-        const usuario = await User.atualizarFoto(req.usuarioId, caminhoFoto);
+        await User.atualizarFoto(req.usuarioId, caminhoFoto);
+        await Pontos.ganhar(req.usuarioId, 'foto_perfil', 'perfil');
+        const usuario = await User.buscarPorId(req.usuarioId);
         await responderPerfil(res, usuario, 'Foto de perfil enviada!');
     } catch (erro) {
         res.status(400).json({ erro: erro.message || 'Erro ao enviar a foto' });

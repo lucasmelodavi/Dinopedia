@@ -15,6 +15,10 @@ export default function Sobre() {
         tópicos.
       </p>
       <p>
+        Cada contribuição vale pontos: cadastrar dinossauro, editar ficha, foto
+        e tópico. O ranking fica em <Link to="/ranking">Ranking</Link>.
+      </p>
+      <p>
         O criador da DinoPédia é <strong>lucasmelodavi425@gmail.com</strong>.
         Com essa conta dá para excluir perfis de outros colaboradores.
       </p>

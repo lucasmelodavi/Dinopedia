@@ -61,7 +61,7 @@ export default function DinossauroDetalhe() {
           <p>{dino.descricao}</p>
           {autenticado ? (
             <Link to={`/dinossauros/${dino.id}/editar`} className="botao botao-fantasma">
-              Editar ficha
+              Editar ficha e curiosidades
             </Link>
           ) : null}
         </div>

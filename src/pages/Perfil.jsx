@@ -312,7 +312,7 @@ export default function Perfil() {
           <div>
             <div className="perfil-nome">
               <h1>{perfil?.nome}</h1>
-              <span className="perfil-badge">Colaborador</span>
+              <span className="perfil-badge">{perfil?.nivel?.nome || 'Colaborador'}</span>
               {perfil?.criador ? <span className="perfil-badge perfil-badge-criador">Criador</span> : null}
             </div>
             {meuPerfil && perfil?.email ? <p className="perfil-meta">{perfil.email}</p> : null}
@@ -370,6 +370,9 @@ export default function Perfil() {
               <Link to="/amigos" className="botao botao-fantasma">
                 Ver amigos
               </Link>
+              <Link to="/ranking" className="botao botao-fantasma">
+                Ranking
+              </Link>
               {podeExcluir ? (
                 <button
                   type="button"
@@ -385,6 +388,15 @@ export default function Perfil() {
         </div>
 
         <ul className="perfil-stats">
+          <li>
+            <strong>{perfil?.pontos || 0}</strong>
+            <span>
+              Pontos
+              {perfil?.nivel?.proximo
+                ? ` · faltam ${perfil.nivel.faltam} para ${perfil.nivel.proximo.nome}`
+                : ''}
+            </span>
+          </li>
           <li>
             <strong>{edicoes.length}</strong>
             <span>Edições realizadas</span>
@@ -449,6 +461,26 @@ export default function Perfil() {
           ) : null}
         </article>
       </div>
+
+      {(perfil?.historicoPontos || []).length > 0 ? (
+        <article className="perfil-cartao">
+          <div className="perfil-cartao-topo">
+            <h2>Pontos recentes</h2>
+            <Link to="/ranking">Ver ranking</Link>
+          </div>
+          <ul className="perfil-edicoes">
+            {perfil.historicoPontos.map((evento) => (
+              <li key={evento.id}>
+                <p>
+                  {evento.descricao}
+                  <strong> +{evento.pontos}</strong>
+                </p>
+                <small>{tempoRelativo(evento.data)}</small>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
 
       <article className="perfil-cartao">
         <div className="perfil-cartao-topo">

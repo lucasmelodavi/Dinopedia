@@ -7,6 +7,7 @@ const links = [
   { to: '/linha-do-tempo', label: 'Linha do Tempo', icon: 'globo' },
   { to: '/dinossauros', label: 'Dinossauros', icon: 'pegada' },
   { to: '/amigos', label: 'Amigos', icon: 'amigos' },
+  { to: '/ranking', label: 'Ranking', icon: 'trofeu' },
   { to: '/sobre', label: 'Sobre', icon: 'info' },
   { to: '/contato', label: 'Contato', icon: 'carta' },
 ]
@@ -55,6 +56,15 @@ function Icone({ nome }) {
       </svg>
     )
   }
+  if (nome === 'trofeu') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 4h8v3a4 4 0 0 1-8 0z" />
+        <path d="M8 6H5a3 3 0 0 0 3 5M16 6h3a3 3 0 0 1-3 5" />
+        <path d="M12 13v3M9 20h6M10 20v-4h4v4" />
+      </svg>
+    )
+  }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 6h16v12H4z" />
@@ -96,6 +106,9 @@ export default function Header() {
       <div className="cabecalho-acoes">
         {autenticado ? (
           <>
+            <NavLink to="/ranking" className="cabecalho-pontos" title={usuario?.nivel?.nome || 'Pontos'}>
+              {usuario?.pontos || 0} pts
+            </NavLink>
             <NavLink to="/dinossauros/novo" className="botao">
               Adicionar
             </NavLink>

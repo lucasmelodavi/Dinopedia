@@ -11,6 +11,7 @@ function CartaoPessoa({ pessoa, autenticado, onSeguir, onExcluir, seguindo, souE
       <Link to={`/usuarios/${pessoa.id}`} className="cartao-pessoa-link">
         <Avatar usuario={pessoa} className="cartao-pessoa-foto" />
         <strong>{pessoa.nome}</strong>
+        <small className="cartao-pessoa-pontos">{pessoa.pontos || 0} pts</small>
         {pessoa.criador ? <span className="perfil-badge perfil-badge-criador">Criador</span> : null}
       </Link>
       {souEu ? (

@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const verificarToken = require('../middlewares/authMiddleware');
 
 router.get('/', userController.listarUsuarios);
+router.get('/ranking', userController.ranking);
 router.get('/:id/seguidores', userController.listarSeguidores);
 router.get('/:id/seguindo', userController.listarSeguindo);
 router.get('/:id', verificarToken.opcional, userController.buscarUsuario);

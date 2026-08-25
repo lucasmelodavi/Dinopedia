@@ -2,6 +2,7 @@ const Dinosaur = require('../models/Dinosaur');
 const Topico = require('../models/Topico');
 const Edicao = require('../models/Edicao');
 const Imagem = require('../models/Imagem');
+const Pontos = require('../models/Pontos');
 
 const CAMPOS_EDICAO = [
     'nome',
@@ -54,6 +55,8 @@ const criarDinossauro = async (req, res) => {
             ...dadosDaFicha(req.body),
             usuarioId: req.usuarioId
         });
+
+        await Pontos.ganhar(req.usuarioId, 'cadastro_dino', novoDinossauro.id);
 
         res.status(201).json({
             mensagem: 'Dinossauro criado com sucesso!',
@@ -123,6 +126,16 @@ const atualizarDinossauro = async (req, res) => {
 
         await Edicao.registrarVarios(id, req.usuarioId, anterior, atualizado, CAMPOS_EDICAO);
 
+        const mudouFicha = CAMPOS_EDICAO.some((campo) => {
+            if (campo === 'foto') return false;
+            return String(anterior[campo] ?? '') !== String(atualizado[campo] ?? '');
+        });
+
+        if (mudouFicha) {
+            const dia = new Date().toISOString().slice(0, 10);
+            await Pontos.ganhar(req.usuarioId, 'edicao_ficha', `${id}:${dia}`);
+        }
+
         const dinossauro = await fichaCompleta(id);
 
         res.json({ mensagem: 'Dinossauro atualizado!', dinossauro });
@@ -159,6 +172,8 @@ const uploadFoto = async (req, res) => {
             valorAntigo: anterior.foto,
             valorNovo: atualizado.foto
         });
+
+        await Pontos.ganhar(req.usuarioId, 'foto_dino', id);
 
         const dinossauro = await fichaCompleta(id);
         res.json({ mensagem: 'DinoFoto enviada!', dinossauro });
@@ -206,6 +221,8 @@ const criarTopico = async (req, res) => {
             valorAntigo: null,
             valorNovo: `[${topico.categoria}] ${topico.texto}`
         });
+
+        await Pontos.ganhar(req.usuarioId, 'topico', topico.id);
 
         res.status(201).json({
             mensagem: 'Tópico adicionado!',

@@ -59,6 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_edicoes_usuario ON edicoes(usuario_id);
 ALTER TABLE dinossauros ADD COLUMN IF NOT EXISTS destaque BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS foto VARCHAR(500);
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS descricao TEXT;
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pontos INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS seguidores (
     seguidor_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -78,6 +79,20 @@ CREATE TABLE IF NOT EXISTS imagens (
     dados BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS pontos_eventos (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    tipo VARCHAR(40) NOT NULL,
+    pontos INTEGER NOT NULL,
+    referencia VARCHAR(120) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pontos_eventos_unico
+    ON pontos_eventos (usuario_id, tipo, referencia);
+CREATE INDEX IF NOT EXISTS idx_pontos_eventos_usuario ON pontos_eventos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_pontos ON usuarios(pontos DESC);
 
 INSERT INTO periodos (nome) VALUES
     ('Triássico'),

@@ -13,6 +13,7 @@ import Amigos from './pages/Amigos'
 import Sobre from './pages/Sobre'
 import Contato from './pages/Contato'
 import LinhaDoTempo from './pages/LinhaDoTempo'
+import Ranking from './pages/Ranking'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/confirmar" element={<ConfirmarEmail />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/amigos" element={<Amigos />} />
+            <Route path="/ranking" element={<Ranking />} />
             <Route path="/usuarios/:id" element={<Perfil />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

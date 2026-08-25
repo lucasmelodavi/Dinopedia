@@ -19,6 +19,7 @@ export default function Footer() {
           <Link to="/sobre">Regras de edição</Link>
           <Link to="/sobre">Contribuidores</Link>
           <Link to="/amigos">Amigos</Link>
+          <Link to="/ranking">Ranking</Link>
           <Link to="/perfil">Perfil</Link>
         </div>
         <div>

@@ -36,3 +36,7 @@ export function listarSeguindo(id) {
 export function excluirUsuario(id) {
   return request(`/usuarios/${id}`, { method: 'DELETE' })
 }
+
+export function listarRanking(limit = 20) {
+  return request(`/usuarios/ranking?limit=${limit}`)
+}
