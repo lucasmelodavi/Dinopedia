@@ -7,6 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const app = express();
 const config = require('./config/index');
 const routes = require('./routes');
+const { servir: servirUpload } = require('./controllers/arquivoController');
 const { initDb } = require('./db/init');
 
 const pastaSite = path.join(__dirname, '..', 'dist');
@@ -26,7 +27,7 @@ function ehRotaDaApi(caminho) {
 
 app.use(cors(config.cors));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.get('/uploads/:arquivo', servirUpload);
 
 app.use('/', routes);
 

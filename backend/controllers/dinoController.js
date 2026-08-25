@@ -1,6 +1,7 @@
 const Dinosaur = require('../models/Dinosaur');
 const Topico = require('../models/Topico');
 const Edicao = require('../models/Edicao');
+const Imagem = require('../models/Imagem');
 
 const CAMPOS_EDICAO = [
     'nome',
@@ -148,7 +149,7 @@ const uploadFoto = async (req, res) => {
             return res.status(400).json({ erro: 'Nenhum arquivo enviado' });
         }
 
-        const caminhoFoto = `/uploads/${req.file.filename}`;
+        const caminhoFoto = await Imagem.persistirMulter(req.file);
         const { anterior, atualizado } = await Dinosaur.atualizar(id, { foto: caminhoFoto });
 
         await Edicao.registrar({

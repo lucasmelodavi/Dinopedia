@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Imagem = require('../models/Imagem');
 const { montarPerfil } = require('./userController');
 const config = require('../config');
 const { sendConfirmationEmail } = require('../config/email');
@@ -255,7 +256,8 @@ const uploadFotoPerfil = async (req, res) => {
             return res.status(400).json({ erro: 'Nenhum arquivo enviado' });
         }
 
-        const usuario = await User.atualizarFoto(req.usuarioId, `/uploads/${req.file.filename}`);
+        const caminhoFoto = await Imagem.persistirMulter(req.file);
+        const usuario = await User.atualizarFoto(req.usuarioId, caminhoFoto);
         await responderPerfil(res, usuario, 'Foto de perfil enviada!');
     } catch (erro) {
         res.status(400).json({ erro: erro.message || 'Erro ao enviar a foto' });

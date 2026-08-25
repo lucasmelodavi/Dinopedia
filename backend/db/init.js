@@ -48,7 +48,7 @@ async function initDb() {
         );
     }
 
-    console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes)');
+    console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes, imagens)');
     await seed();
 }
 

@@ -71,6 +71,14 @@ CREATE TABLE IF NOT EXISTS seguidores (
 CREATE INDEX IF NOT EXISTS idx_seguidores_seguido ON seguidores(seguido_id);
 CREATE INDEX IF NOT EXISTS idx_seguidores_seguidor ON seguidores(seguidor_id);
 
+CREATE TABLE IF NOT EXISTS imagens (
+    id SERIAL PRIMARY KEY,
+    caminho VARCHAR(300) UNIQUE NOT NULL,
+    mime VARCHAR(80) NOT NULL,
+    dados BYTEA NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 INSERT INTO periodos (nome) VALUES
     ('Triássico'),
     ('Jurássico'),
