@@ -934,14 +934,29 @@ a {
 
 .perfil-avatar img,
 .cartao-pessoa-foto img,
-.lista-pessoa-foto img,
-.cabecalho-avatar img {
+.lista-pessoa-foto img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.cabecalho-perfil {
+  overflow: hidden;
+}
+
+.cabecalho-perfil img,
+.cabecalho-avatar img {
+  width: 22px;
+  height: 22px;
+  max-width: 22px;
+  max-height: 22px;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+  position: static;
 }
 
 .perfil-nome {
@@ -1876,6 +1891,15 @@ a {
   .cabecalho-avatar {
     width: 28px;
     height: 28px;
+    flex-basis: 28px;
+  }
+
+  .cabecalho-perfil img,
+  .cabecalho-avatar img {
+    width: 28px;
+    height: 28px;
+    max-width: 28px;
+    max-height: 28px;
   }
 
   .indice-fundo {

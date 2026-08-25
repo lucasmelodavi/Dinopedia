@@ -12,7 +12,13 @@ export default function Avatar({ usuario, className = 'perfil-avatar', alt }) {
     <span className={classes.join(' ')}>
       <span className={className}>
         {foto ? (
-          <img src={foto} alt={alt || `Foto de ${usuario?.nome || 'colaborador'}`} />
+          <img
+            className="avatar-foto"
+            src={foto}
+            alt={alt || `Foto de ${usuario?.nome || 'colaborador'}`}
+            width={className === 'cabecalho-avatar' ? 22 : 84}
+            height={className === 'cabecalho-avatar' ? 22 : 84}
+          />
         ) : (
           iniciais(usuario?.nome)
         )}
