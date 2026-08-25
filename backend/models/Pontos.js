@@ -80,6 +80,14 @@ class Pontos {
     }
 
     static async sincronizar() {
+        try {
+            await Pontos.aplicarSincronizacaoGeral();
+        } catch (erro) {
+            console.error('Falha ao sincronizar pontos:', erro.message);
+        }
+    }
+
+    static async aplicarSincronizacaoGeral() {
         await pool.query(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
              SELECT id, 'confirmar', $1, 'conta'
@@ -141,7 +149,7 @@ class Pontos {
         await pool.query(
             `UPDATE usuarios
              SET pontos = COALESCE((
-                 SELECT SUM(pontos_eventos.pontos)
+                 SELECT SUM(pontos_eventos.pontos)::int
                  FROM pontos_eventos
                  WHERE pontos_eventos.usuario_id = usuarios.id
              ), 0)`
@@ -151,6 +159,15 @@ class Pontos {
     static async sincronizarUsuario(usuarioId) {
         const id = parseInt(usuarioId, 10);
         if (!id) return;
+
+        try {
+            await Pontos.aplicarSincronizacaoUsuario(id);
+        } catch (erro) {
+            console.error('Falha ao sincronizar pontos do usuário', id, erro.message);
+        }
+    }
+
+    static async aplicarSincronizacaoUsuario(id) {
 
         await pool.query(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
@@ -213,7 +230,7 @@ class Pontos {
         await pool.query(
             `UPDATE usuarios
              SET pontos = COALESCE((
-                 SELECT SUM(pontos_eventos.pontos)
+                 SELECT SUM(pontos_eventos.pontos)::int
                  FROM pontos_eventos
                  WHERE pontos_eventos.usuario_id = $1
              ), 0)

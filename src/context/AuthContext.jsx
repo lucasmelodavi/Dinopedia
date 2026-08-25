@@ -17,9 +17,11 @@ export function AuthProvider({ children }) {
 
     getPerfil()
       .then((dados) => setUsuario(dados))
-      .catch(() => {
-        setToken(null)
-        setUsuario(null)
+      .catch((falha) => {
+        if (falha.status === 401 || falha.status === 404) {
+          setToken(null)
+          setUsuario(null)
+        }
       })
       .finally(() => setCarregando(false))
   }, [])

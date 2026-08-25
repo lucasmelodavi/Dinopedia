@@ -121,10 +121,11 @@ const login = async (req, res) => {
         }
 
         await Pontos.sincronizarUsuario(usuario.id);
-        const atualizado = await User.buscarPorId(usuario.id);
+        const atualizado = (await User.buscarPorId(usuario.id)) || usuario;
 
         res.json(emitirSessao(atualizado));
     } catch (erro) {
+        console.error('Erro ao fazer login:', erro.message);
         res.status(500).json({ erro: 'Erro ao fazer login' });
     }
 };
