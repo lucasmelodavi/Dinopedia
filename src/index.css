@@ -768,6 +768,136 @@ a {
   font-weight: 800;
 }
 
+.avatar-envolve {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.moldura-pegadas > .perfil-avatar,
+.moldura-pegadas > .lista-pessoa-foto,
+.moldura-pegadas > .cartao-pessoa-foto {
+  box-shadow: 0 0 0 3px #5ea33a, 0 0 0 7px rgba(94, 163, 58, 0.28);
+}
+
+.moldura-fossil > .perfil-avatar,
+.moldura-fossil > .lista-pessoa-foto,
+.moldura-fossil > .cartao-pessoa-foto {
+  box-shadow: 0 0 0 3px #c4b49a, 0 0 0 7px rgba(196, 180, 154, 0.3);
+}
+
+.moldura-ambar > .perfil-avatar,
+.moldura-ambar > .lista-pessoa-foto,
+.moldura-ambar > .cartao-pessoa-foto {
+  box-shadow: 0 0 0 3px #e8b040, 0 0 14px rgba(232, 176, 64, 0.55);
+}
+
+.moldura-meteoro > .perfil-avatar,
+.moldura-meteoro > .lista-pessoa-foto,
+.moldura-meteoro > .cartao-pessoa-foto {
+  box-shadow: 0 0 0 3px #ff7a3c, 0 0 16px rgba(255, 122, 60, 0.55);
+}
+
+.moldura-lendario > .perfil-avatar,
+.moldura-lendario > .lista-pessoa-foto,
+.moldura-lendario > .cartao-pessoa-foto {
+  box-shadow:
+    0 0 0 3px #f4e27a,
+    0 0 0 7px #5ea33a,
+    0 0 18px rgba(244, 226, 122, 0.7);
+}
+
+.moldura-pegadas > .cabecalho-avatar,
+.moldura-fossil > .cabecalho-avatar {
+  box-shadow: 0 0 0 2px #5ea33a;
+}
+
+.moldura-ambar > .cabecalho-avatar {
+  box-shadow: 0 0 0 2px #e8b040;
+}
+
+.moldura-meteoro > .cabecalho-avatar {
+  box-shadow: 0 0 0 2px #ff7a3c;
+}
+
+.moldura-lendario > .cabecalho-avatar {
+  box-shadow: 0 0 0 2px #f4e27a;
+}
+
+.avatar-broche {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  font-size: 1.05rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px #000);
+  pointer-events: none;
+}
+
+.cabecalho-perfil .avatar-broche {
+  font-size: 0.7rem;
+  right: -5px;
+  bottom: -5px;
+}
+
+.perfil-enfeites {
+  margin-top: 18px;
+}
+
+.perfil-enfeites h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.grade-enfeites {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.enfeite-opcao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #0e130e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.enfeite-opcao span {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.enfeite-opcao strong {
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.enfeite-opcao small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.enfeite-opcao.is-ativo {
+  border-color: var(--green);
+}
+
+.enfeite-opcao.is-bloqueado {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.enfeite-opcao:hover:not(:disabled) {
+  border-color: var(--green-2);
+}
+
 .perfil-avatar img,
 .cartao-pessoa-foto img,
 .lista-pessoa-foto img {
@@ -857,6 +987,62 @@ a {
 .perfil-stats span {
   color: var(--muted);
   font-size: 0.82rem;
+}
+
+.lista-conquistas {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.conquista {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0e130e;
+}
+
+.conquista strong,
+.conquista p,
+.conquista small {
+  display: block;
+}
+
+.conquista strong {
+  margin-top: 6px;
+  font-size: 0.92rem;
+}
+
+.conquista p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.conquista small {
+  margin-top: 8px;
+  color: var(--green-2);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.conquista-simbolo {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.conquista.is-off {
+  opacity: 0.45;
+}
+
+.conquista.is-off small {
+  color: var(--muted);
 }
 
 .perfil-grade {
@@ -1294,13 +1480,17 @@ a {
 .perfil-cartao.is-alvo,
 #edicoes.is-alvo,
 #configuracoes.is-alvo,
-#meus-topicos.is-alvo {
+#meus-topicos.is-alvo,
+#conquistas.is-alvo,
+#enfeites.is-alvo {
   box-shadow: 0 0 0 2px var(--green);
 }
 
 #edicoes,
 #configuracoes,
-#meus-topicos {
+#meus-topicos,
+#conquistas,
+#enfeites {
   scroll-margin-top: 88px;
 }
 

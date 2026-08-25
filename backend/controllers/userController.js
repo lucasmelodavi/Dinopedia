@@ -3,6 +3,8 @@ const Follow = require('../models/Follow');
 const Edicao = require('../models/Edicao');
 const Pontos = require('../models/Pontos');
 const Topico = require('../models/Topico');
+const Conquista = require('../models/Conquista');
+const Enfeite = require('../config/enfeites');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     try {
@@ -11,19 +13,21 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         console.error('Pontos no perfil', usuario.id, erro.message);
     }
     let atual = (await User.buscarPorId(usuario.id)) || usuario;
-    const [edicoes, contagem, seguidores, seguindo, historicoPontos, topicos] = await Promise.all([
+    const [edicoes, contagem, seguidores, seguindo, historicoPontos, topicos, conquistas] = await Promise.all([
         Edicao.listarPorUsuario(atual.id).catch(() => []),
         Follow.contar(atual.id).catch(() => ({ seguidores: 0, seguindo: 0 })),
         Follow.listarSeguidores(atual.id).catch(() => []),
         Follow.listarSeguindo(atual.id).catch(() => []),
         Pontos.listarPorUsuario(atual.id).catch(() => []),
-        Topico.listarPorUsuario(atual.id).catch(() => [])
+        Topico.listarPorUsuario(atual.id).catch(() => []),
+        Conquista.paraUsuario(atual.id).catch(() => ({ desbloqueadas: 0, total: 0, itens: [] }))
     ]);
 
     const visivel = comEmail ? User.publico(atual) : User.visivel(atual);
     const seguindoEste = visitanteId
         ? await Follow.estaSeguindo(visitanteId, atual.id)
         : false;
+    const eEu = Boolean(visitanteId && Number(visitanteId) === Number(atual.id));
 
     return {
         ...visivel,
@@ -32,15 +36,18 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         seguidores,
         seguindo,
         historicoPontos,
+        conquistas,
         estatisticas: {
             edicoes: edicoes.length,
             topicos: topicos.length,
             seguidores: contagem.seguidores,
             seguindo: contagem.seguindo,
-            pontos: visivel.pontos
+            pontos: visivel.pontos,
+            conquistas: conquistas.desbloqueadas
         },
         seguindoEste,
-        eEu: Boolean(visitanteId && Number(visitanteId) === Number(atual.id))
+        eEu,
+        ...(eEu ? { enfeitesCatalogo: Enfeite.listar(atual.pontos, atual.enfeites) } : {})
     };
 }
 
@@ -87,7 +94,8 @@ const ranking = async (req, res) => {
                 pontos: regra.pontos,
                 label: regra.label
             })),
-            niveis: NIVEIS
+            niveis: NIVEIS,
+            conquistas: Conquista.catalogoPublico()
         });
     } catch (erro) {
         res.status(500).json({ erro: 'Erro ao montar o ranking' });

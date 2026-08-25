@@ -231,10 +231,13 @@ const atualizarPerfil = async (req, res) => {
     try {
         const temAvatar = Boolean(String(req.body.avatar || '').trim());
         const temDescricao = Object.prototype.hasOwnProperty.call(req.body, 'descricao');
+        const temEnfeites = Object.prototype.hasOwnProperty.call(req.body, 'enfeites');
 
-        if (!temAvatar && !temDescricao) {
-            return res.status(400).json({ erro: 'Envie um avatar ou uma descrição.' });
+        if (!temAvatar && !temDescricao && !temEnfeites) {
+            return res.status(400).json({ erro: 'Envie um avatar, uma descrição ou um enfeite.' });
         }
+
+        await Pontos.garantirEstrutura();
 
         const dados = {};
 
@@ -250,9 +253,15 @@ const atualizarPerfil = async (req, res) => {
             dados.descricao = req.body.descricao;
         }
 
+        if (temEnfeites) {
+            dados.enfeites = req.body.enfeites;
+        }
+
         const usuario = await User.atualizar(req.usuarioId, dados);
         await Pontos.completarPerfil(usuario);
-        const mensagem = temDescricao && !temAvatar
+        const mensagem = temEnfeites && !temDescricao && !temAvatar
+            ? 'Enfeites do perfil atualizados!'
+            : temDescricao && !temAvatar
             ? 'Descrição atualizada!'
             : 'Perfil atualizado!';
         await responderPerfil(res, usuario, mensagem);

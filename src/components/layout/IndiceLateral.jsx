@@ -121,6 +121,13 @@ function Icone({ nome }) {
       </svg>
     )
   }
+  if (nome === 'estrela') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3.5 14.4 9l6 .5-4.6 3.8 1.6 5.7L12 16.2 6.6 19l1.6-5.7L3.6 9.5l6-.5z" />
+      </svg>
+    )
+  }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8 6h9M8 12h9M8 18h9M5 6h.01M5 12h.01M5 18h.01" />
@@ -146,6 +153,8 @@ export default function IndiceLateral({ aberto, onMudar }) {
   const conta = autenticado
     ? [
         { to: '/dinossauros/novo', label: 'Adicionar dinossauro', icon: 'mais' },
+        { to: '/perfil#conquistas', label: 'Conquistas', icon: 'trofeu', ativo: false },
+        { to: '/perfil#enfeites', label: 'Enfeites', icon: 'estrela', ativo: false },
         { to: '/perfil#meus-topicos', label: 'Meus tópicos', icon: 'topico', ativo: false },
         { to: '/perfil#edicoes', label: 'Minhas edições', icon: 'edicao', ativo: false },
         { to: '/perfil', label: 'Perfil', icon: 'pessoa' },

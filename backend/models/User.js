@@ -1,6 +1,7 @@
 const pool = require('../db/pool');
 const config = require('../config');
 const { resumir } = require('../config/pontos');
+const Enfeite = require('../config/enfeites');
 
 const AVATARES_VALIDOS = [
     'trex-oculos',
@@ -37,7 +38,8 @@ class User {
             codigoExpira: row.codigo_expira,
             foto: row.foto || null,
             descricao: row.descricao || '',
-            pontos: Number(row.pontos) || 0
+            pontos: Number(row.pontos) || 0,
+            enfeites: Enfeite.lerLista(row.enfeites)
         };
     }
 
@@ -58,7 +60,8 @@ class User {
             descricao: usuario.descricao || '',
             criador: User.ehCriador(usuario.email),
             pontos: Number(usuario.pontos) || 0,
-            nivel: resumir(usuario.pontos)
+            nivel: resumir(usuario.pontos),
+            enfeites: Enfeite.filtrarEquipados(usuario.enfeites, usuario.pontos)
         };
     }
 
@@ -73,7 +76,8 @@ class User {
             descricao: publico.descricao,
             criador: publico.criador,
             pontos: publico.pontos,
-            nivel: publico.nivel
+            nivel: publico.nivel,
+            enfeites: publico.enfeites
         };
     }
 
@@ -90,7 +94,7 @@ class User {
         valores.push(teto);
 
         const resultado = await pool.query(
-            `SELECT id, nome, foto, email, pontos
+            `SELECT id, nome, foto, email, pontos, enfeites
              FROM usuarios
              WHERE ${condicoes.join(' AND ')}
              ORDER BY nome ASC
@@ -189,7 +193,7 @@ class User {
         return User.atualizar(id, { foto });
     }
 
-    static async atualizar(id, { foto, descricao } = {}) {
+    static async atualizar(id, { foto, descricao, enfeites } = {}) {
         const atual = await User.buscarPorId(id);
         if (!atual) {
             throw new Error('Usuário não encontrado');
@@ -204,13 +208,16 @@ class User {
         }
 
         const proximaFoto = foto !== undefined ? foto : atual.foto;
+        const proximosEnfeites = enfeites !== undefined
+            ? Enfeite.validarEscolha(enfeites, atual.pontos)
+            : Enfeite.filtrarEquipados(atual.enfeites, atual.pontos);
 
         const resultado = await pool.query(
             `UPDATE usuarios
-             SET foto = $1, descricao = $2
-             WHERE id = $3
+             SET foto = $1, descricao = $2, enfeites = $3
+             WHERE id = $4
              RETURNING *`,
-            [proximaFoto, proximaDescricao, id]
+            [proximaFoto, proximaDescricao, JSON.stringify(proximosEnfeites), id]
         );
 
         return User.mapear(resultado.rows[0]);

@@ -1,11 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { urlFotoPerfil } from '../../constants/avatares'
+import Avatar from '../Avatar'
 import { useAuth } from '../../context/AuthContext'
 
 export default function Header({ onAbrirIndice, indiceAberto }) {
   const { autenticado, logout, usuario } = useAuth()
   const navigate = useNavigate()
-  const fotoPerfil = urlFotoPerfil(usuario)
 
   return (
     <header className="cabecalho">
@@ -42,11 +41,7 @@ export default function Header({ onAbrirIndice, indiceAberto }) {
               Adicionar
             </NavLink>
             <NavLink to="/perfil" className="botao botao-fantasma cabecalho-perfil">
-              {fotoPerfil ? (
-                <img className="cabecalho-avatar" src={fotoPerfil} alt="" />
-              ) : (
-                <span className="cabecalho-avatar cabecalho-avatar-vazio" aria-hidden="true" />
-              )}
+              <Avatar usuario={usuario} className="cabecalho-avatar" alt="" />
               <span className="cabecalho-perfil-texto">Perfil</span>
             </NavLink>
             <button

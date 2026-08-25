@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 import Avatar from '../components/Avatar'
 import { ehContaCriador } from '../constants'
 import { useAuth } from '../context/AuthContext'
-import { enviarFotoPerfil, getPerfil, atualizarDescricao } from '../services/authService'
+import { enviarFotoPerfil, getPerfil, atualizarDescricao, atualizarEnfeites } from '../services/authService'
 import { listarDinossauros } from '../services/dinosaurService'
 import { buscarUsuario, deixarDeSeguir, excluirUsuario, seguirUsuario } from '../services/userService'
 
@@ -194,6 +194,8 @@ export default function Perfil() {
   const [salvandoBio, setSalvandoBio] = useState(false)
   const [okBio, setOkBio] = useState('')
   const [excluindo, setExcluindo] = useState(false)
+  const [salvandoEnfeite, setSalvandoEnfeite] = useState(false)
+  const [okEnfeite, setOkEnfeite] = useState('')
   const souCriador = ehContaCriador(usuario)
   const podeExcluir = souCriador && !meuPerfil && perfil && !perfil.criador
 
@@ -285,6 +287,26 @@ export default function Perfil() {
     }
     if (!id || String(usuario?.id) === String(dados.id)) {
       atualizarUsuario(dados)
+    }
+  }
+
+  async function handleEnfeite(item) {
+    if (!item.desbloqueado || salvandoEnfeite) return
+    setOkEnfeite('')
+    const catalogo = perfil?.enfeitesCatalogo || []
+    const outros = catalogo
+      .filter((enfeite) => enfeite.equipado && enfeite.tipo !== item.tipo)
+      .map((enfeite) => enfeite.id)
+    const proximo = item.equipado ? outros : [...outros, item.id]
+    setSalvandoEnfeite(true)
+    try {
+      const dados = await atualizarEnfeites(proximo)
+      await aplicarPerfil(dados)
+      setOkEnfeite(item.equipado ? 'Enfeite removido.' : `${item.nome} colocado no perfil.`)
+    } catch (falha) {
+      setOkEnfeite(falha.message || 'Não foi possível mudar o enfeite.')
+    } finally {
+      setSalvandoEnfeite(false)
     }
   }
 
@@ -459,6 +481,10 @@ export default function Perfil() {
             <span>Dinossauros cadastrados</span>
           </li>
           <li>
+            <strong>{perfil?.estatisticas?.conquistas ?? (perfil?.conquistas?.desbloqueadas || 0)}</strong>
+            <span>Conquistas</span>
+          </li>
+          <li>
             <strong>{totalSeguidores}</strong>
             <span>Seguidores</span>
           </li>
@@ -466,6 +492,40 @@ export default function Perfil() {
             <strong>{totalSeguindo}</strong>
             <span>Seguindo</span>
           </li>
+        </ul>
+      </article>
+
+      <article className="perfil-cartao" id="conquistas">
+        <div className="perfil-cartao-topo">
+          <h2>Conquistas</h2>
+          <span>
+            {perfil?.conquistas?.desbloqueadas || 0}/{perfil?.conquistas?.total || 0}
+          </span>
+        </div>
+        <p className="perfil-cartao-legenda">
+          {meuPerfil
+            ? 'Marcas do que você já fez na DinoPédia. As apagadas ainda faltam.'
+            : 'Marcas do que esta pessoa já fez na DinoPédia.'}
+        </p>
+        <ul className="lista-conquistas">
+          {(perfil?.conquistas?.itens || []).map((conquista) => (
+            <li
+              key={conquista.id}
+              className={`conquista ${conquista.desbloqueada ? 'is-on' : 'is-off'}`}
+              title={conquista.descricao}
+            >
+              <span className="conquista-simbolo" aria-hidden="true">
+                {conquista.simbolo}
+              </span>
+              <strong>{conquista.nome}</strong>
+              <p>{conquista.descricao}</p>
+              <small>
+                {conquista.desbloqueada
+                  ? 'Desbloqueada'
+                  : `${conquista.atual}/${conquista.meta}`}
+              </small>
+            </li>
+          ))}
         </ul>
       </article>
 
@@ -509,6 +569,63 @@ export default function Perfil() {
                 disabled={salvandoFoto}
               />
             </label>
+          </div>
+          <div className="perfil-enfeites" id="enfeites">
+            <h3>Enfeites do perfil</h3>
+            <p className="perfil-cartao-legenda">
+              Os pontos desbloqueiam molduras e broches. Toque para colocar ou tirar. Uma moldura e um broche por vez.
+            </p>
+            <p className="bloco-curiosidades-ajuda">Molduras</p>
+            <div className="grade-enfeites">
+              {(perfil?.enfeitesCatalogo || [])
+                .filter((item) => item.tipo === 'moldura')
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`enfeite-opcao ${item.equipado ? 'is-ativo' : ''} ${item.desbloqueado ? '' : 'is-bloqueado'}`}
+                    onClick={() => handleEnfeite(item)}
+                    disabled={!item.desbloqueado || salvandoEnfeite}
+                    title={item.desbloqueado ? item.descricao : `Desbloqueia com ${item.min} pontos`}
+                  >
+                    <span aria-hidden="true">{item.simbolo}</span>
+                    <strong>{item.nome}</strong>
+                    <small>
+                      {item.desbloqueado
+                        ? item.equipado
+                          ? 'No perfil'
+                          : `${item.min} pts`
+                        : `Faltam ${item.faltam} pts`}
+                    </small>
+                  </button>
+                ))}
+            </div>
+            <p className="bloco-curiosidades-ajuda">Broches</p>
+            <div className="grade-enfeites">
+              {(perfil?.enfeitesCatalogo || [])
+                .filter((item) => item.tipo === 'broche')
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`enfeite-opcao ${item.equipado ? 'is-ativo' : ''} ${item.desbloqueado ? '' : 'is-bloqueado'}`}
+                    onClick={() => handleEnfeite(item)}
+                    disabled={!item.desbloqueado || salvandoEnfeite}
+                    title={item.desbloqueado ? item.descricao : `Desbloqueia com ${item.min} pontos`}
+                  >
+                    <span aria-hidden="true">{item.simbolo}</span>
+                    <strong>{item.nome}</strong>
+                    <small>
+                      {item.desbloqueado
+                        ? item.equipado
+                          ? 'No perfil'
+                          : `${item.min} pts`
+                        : `Faltam ${item.faltam} pts`}
+                    </small>
+                  </button>
+                ))}
+            </div>
+            {okEnfeite ? <p className="ok">{okEnfeite}</p> : null}
           </div>
         </article>
       ) : null}

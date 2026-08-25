@@ -85,7 +85,7 @@ class Pontos {
     static async ranking(limit = 20) {
         const teto = Math.min(parseInt(limit, 10) || 20, 50);
         const resultado = await pool.query(
-            `SELECT id, nome, foto, email, pontos
+            `SELECT id, nome, foto, email, pontos, enfeites
              FROM usuarios
              WHERE confirmado = TRUE
              ORDER BY pontos DESC, nome ASC
@@ -105,6 +105,9 @@ class Pontos {
     static async garantirEstrutura() {
         await pool.query(
             'ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pontos INTEGER NOT NULL DEFAULT 0'
+        );
+        await pool.query(
+            'ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS enfeites TEXT'
         );
         await pool.query(`
             CREATE TABLE IF NOT EXISTS pontos_eventos (
