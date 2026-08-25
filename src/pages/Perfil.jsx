@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import { ehContaCriador } from '../constants'
+import { conquistasDoPerfil } from '../constants/conquistas'
 import { useAuth } from '../context/AuthContext'
 import { enviarFotoPerfil, getPerfil, atualizarDescricao, atualizarEnfeites } from '../services/authService'
 import { listarDinossauros } from '../services/dinosaurService'
@@ -270,6 +271,10 @@ export default function Perfil() {
 
   const edicoes = perfil?.edicoes || []
   const topicos = perfil?.topicos || []
+  const conquistas = useMemo(
+    () => conquistasDoPerfil(perfil, dinossauros),
+    [perfil, dinossauros],
+  )
   const atividade = useMemo(
     () => diasAtividade({ edicoes, topicos, dinossauros }),
     [edicoes, topicos, dinossauros],
@@ -481,7 +486,7 @@ export default function Perfil() {
             <span>Dinossauros cadastrados</span>
           </li>
           <li>
-            <strong>{perfil?.estatisticas?.conquistas ?? (perfil?.conquistas?.desbloqueadas || 0)}</strong>
+            <strong>{conquistas.desbloqueadas}</strong>
             <span>Conquistas</span>
           </li>
           <li>
@@ -499,7 +504,7 @@ export default function Perfil() {
         <div className="perfil-cartao-topo">
           <h2>Conquistas</h2>
           <span>
-            {perfil?.conquistas?.desbloqueadas || 0}/{perfil?.conquistas?.total || 0}
+            {conquistas.desbloqueadas}/{conquistas.total}
           </span>
         </div>
         <p className="perfil-cartao-legenda">
@@ -508,7 +513,7 @@ export default function Perfil() {
             : 'Marcas do que esta pessoa já fez na DinoPédia.'}
         </p>
         <ul className="lista-conquistas">
-          {(perfil?.conquistas?.itens || []).map((conquista) => (
+          {conquistas.itens.map((conquista) => (
             <li
               key={conquista.id}
               className={`conquista ${conquista.desbloqueada ? 'is-on' : 'is-off'}`}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import { REGRAS_PONTOS } from '../constants'
+import { catalogoConquistas } from '../constants/conquistas'
 import { useAuth } from '../context/AuthContext'
 import { listarRanking } from '../services/userService'
 
@@ -69,7 +70,7 @@ export default function Ranking() {
   const [lista, setLista] = useState([])
   const [regras, setRegras] = useState(REGRAS_PONTOS)
   const [niveis, setNiveis] = useState(NIVEIS_PADRAO)
-  const [conquistas, setConquistas] = useState([])
+  const [conquistas, setConquistas] = useState(catalogoConquistas)
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(true)
 
@@ -83,9 +84,11 @@ export default function Ranking() {
         if (Array.isArray(dados.niveis) && dados.niveis.length) {
           setNiveis(dados.niveis)
         }
-        if (Array.isArray(dados.conquistas) && dados.conquistas.length) {
-          setConquistas(dados.conquistas)
-        }
+        setConquistas(
+          Array.isArray(dados.conquistas) && dados.conquistas.length
+            ? dados.conquistas
+            : catalogoConquistas(),
+        )
       })
       .catch((falha) => setErro(falha.message || 'Não foi possível abrir o ranking.'))
       .finally(() => setCarregando(false))
@@ -132,26 +135,24 @@ export default function Ranking() {
         </ul>
       </article>
 
-      {conquistas.length > 0 ? (
-        <article className="perfil-cartao">
-          <div className="perfil-cartao-topo">
-            <h2>Conquistas</h2>
-          </div>
-          <p className="perfil-cartao-legenda">
-            Aparecem no perfil quando a pessoa faz cada marca. Não dão pontos extras.
-          </p>
-          <ul className="lista-regras-pontos">
-            {conquistas.map((conquista) => (
-              <li key={conquista.id}>
-                <strong>{conquista.simbolo}</strong>
-                <span>
-                  {conquista.nome} — {conquista.descricao}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      ) : null}
+      <article className="perfil-cartao">
+        <div className="perfil-cartao-topo">
+          <h2>Conquistas</h2>
+        </div>
+        <p className="perfil-cartao-legenda">
+          Aparecem no perfil quando a pessoa faz cada marca. Não dão pontos extras.
+        </p>
+        <ul className="lista-regras-pontos">
+          {conquistas.map((conquista) => (
+            <li key={conquista.id}>
+              <strong>{conquista.simbolo}</strong>
+              <span>
+                {conquista.nome} — {conquista.descricao}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </article>
 
       <article className="perfil-cartao">
         <div className="perfil-cartao-topo">

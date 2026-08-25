@@ -20,7 +20,10 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         Follow.listarSeguindo(atual.id).catch(() => []),
         Pontos.listarPorUsuario(atual.id).catch(() => []),
         Topico.listarPorUsuario(atual.id).catch(() => []),
-        Conquista.paraUsuario(atual.id).catch(() => ({ desbloqueadas: 0, total: 0, itens: [] }))
+        Conquista.paraUsuario(atual.id).catch((erro) => {
+            console.error('Conquistas no perfil', atual.id, erro.message)
+            return Conquista.montar({})
+        })
     ]);
 
     const visivel = comEmail ? User.publico(atual) : User.visivel(atual);
