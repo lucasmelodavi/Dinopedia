@@ -1328,6 +1328,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #0e130e;
+  overflow: visible;
 }
 
 .item-ranking.is-eu {
@@ -1335,13 +1336,24 @@ a {
 }
 
 .ranking-pos {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   font-weight: 800;
   background: #161c16;
+  position: relative;
+}
+
+.ranking-pos svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .ranking-pos-1 {
@@ -1357,6 +1369,25 @@ a {
 .ranking-pos-3 {
   background: #b56a3a;
   color: #1a0e08;
+}
+
+.ranking-pos-resto {
+  color: var(--green-2);
+}
+
+.ranking-pos-resto small {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: #0b0d0b;
+  color: var(--green-2);
+  font-size: 0.62rem;
+  line-height: 16px;
+  text-align: center;
 }
 
 .ranking-pessoa {

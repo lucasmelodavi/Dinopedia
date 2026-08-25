@@ -14,6 +14,56 @@ const NIVEIS_PADRAO = [
   { nome: 'Lendário', min: 5000 },
 ]
 
+function SimboloPosicao({ posicao }) {
+  const lugar = Number(posicao) || 0
+  const titulo = `${lugar}º lugar`
+
+  if (lugar === 1) {
+    return (
+      <span className="ranking-pos ranking-pos-1" title={titulo} aria-label={titulo}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 9 8 5l4 4 4-4 3 4v2c0 4.5-3.2 7.2-7 8.5-3.8-1.3-7-4-7-8.5z" />
+          <circle cx="12" cy="12" r="2.2" />
+        </svg>
+      </span>
+    )
+  }
+
+  if (lugar === 2) {
+    return (
+      <span className="ranking-pos ranking-pos-2" title={titulo} aria-label={titulo}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="6.5" />
+          <path d="M9 4h6l-1.2 5H10.2z" />
+        </svg>
+      </span>
+    )
+  }
+
+  if (lugar === 3) {
+    return (
+      <span className="ranking-pos ranking-pos-3" title={titulo} aria-label={titulo}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="13" r="6.5" />
+          <path d="M8 3.5 12 8l4-4.5" />
+        </svg>
+      </span>
+    )
+  }
+
+  return (
+    <span className="ranking-pos ranking-pos-resto" title={titulo} aria-label={titulo}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <ellipse cx="8" cy="7" rx="1.7" ry="2.5" />
+        <ellipse cx="12.5" cy="6.2" rx="1.7" ry="2.5" />
+        <ellipse cx="16.4" cy="8.4" rx="1.5" ry="2.2" />
+        <path d="M7 14c3-1 8 0 10 3-4 3-10 2-12-1 0-1 1-2 2-2z" />
+      </svg>
+      <small>{lugar}</small>
+    </span>
+  )
+}
+
 export default function Ranking() {
   const { usuario } = useAuth()
   const [lista, setLista] = useState([])
@@ -92,9 +142,7 @@ export default function Ranking() {
                 key={pessoa.id}
                 className={`item-ranking ${pessoa.id === usuario?.id ? 'is-eu' : ''}`}
               >
-                <span className={`ranking-pos ranking-pos-${pessoa.posicao}`}>
-                  {pessoa.posicao}
-                </span>
+                <SimboloPosicao posicao={pessoa.posicao} />
                 <Link to={`/usuarios/${pessoa.id}`} className="ranking-pessoa">
                   <Avatar usuario={pessoa} className="lista-pessoa-foto" />
                   <span>
