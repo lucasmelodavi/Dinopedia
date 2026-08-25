@@ -1,9 +1,6 @@
 const pool = require('../db/pool');
 const { REGRAS, resumir } = require('../config/pontos');
 
-let ultimaSincronizacao = 0;
-const INTERVALO_SYNC_MS = 8000;
-
 class Pontos {
     static resumir = resumir;
 
@@ -105,189 +102,187 @@ class Pontos {
         });
     }
 
-    static async sincronizar() {
-        const agora = Date.now();
-        if (ultimaSincronizacao && agora - ultimaSincronizacao < INTERVALO_SYNC_MS) {
-            return;
-        }
-        ultimaSincronizacao = agora;
+    static async garantirEstrutura() {
+        await pool.query(
+            'ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS pontos INTEGER NOT NULL DEFAULT 0'
+        );
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS pontos_eventos (
+                id SERIAL PRIMARY KEY,
+                usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+                tipo VARCHAR(40) NOT NULL,
+                pontos INTEGER NOT NULL,
+                referencia VARCHAR(120) NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `);
+        await pool.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_pontos_eventos_unico
+            ON pontos_eventos (usuario_id, tipo, referencia)
+        `);
+    }
 
+    static async tentar(sql, valores = []) {
         try {
-            await Pontos.aplicarSincronizacaoGeral();
+            await pool.query(sql, valores);
         } catch (erro) {
-            ultimaSincronizacao = 0;
+            console.error('Sincronização de pontos:', erro.message);
+        }
+    }
+
+    static async recalcularTodos() {
+        await pool.query(`
+            UPDATE usuarios
+            SET pontos = COALESCE((
+                SELECT SUM(pontos_eventos.pontos)::int
+                FROM pontos_eventos
+                WHERE pontos_eventos.usuario_id = usuarios.id
+            ), 0)
+        `);
+    }
+
+    static async sincronizar() {
+        try {
+            await Pontos.garantirEstrutura();
+            await Pontos.aplicarSincronizacaoGeral();
+            await Pontos.recalcularTodos();
+        } catch (erro) {
             console.error('Falha ao sincronizar pontos:', erro.message);
         }
     }
 
     static async aplicarSincronizacaoGeral() {
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'confirmar', $1, 'conta'
-             FROM usuarios
-             WHERE confirmado = TRUE
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT u.id, 'confirmar', $1, 'conta'
+             FROM usuarios u
+             WHERE u.confirmado = TRUE
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = u.id AND p.tipo = 'confirmar' AND p.referencia = 'conta'
+               )`,
             [REGRAS.confirmar.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT criado_por, 'cadastro_dino', $1, id::text
-             FROM dinossauros
-             WHERE criado_por IS NOT NULL
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT d.criado_por, 'cadastro_dino', $1, d.id::text
+             FROM dinossauros d
+             WHERE d.criado_por IS NOT NULL
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = d.criado_por
+                     AND p.tipo = 'cadastro_dino'
+                     AND p.referencia = d.id::text
+               )`,
             [REGRAS.cadastro_dino.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT usuario_id, 'topico', $1, id::text
-             FROM topicos
-             WHERE usuario_id IS NOT NULL
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT e.usuario_id, 'cadastro_dino', $1, d.id::text
+             FROM dinossauros d
+             JOIN LATERAL (
+                 SELECT usuario_id
+                 FROM edicoes
+                 WHERE dinossauro_id = d.id
+                 ORDER BY created_at ASC
+                 LIMIT 1
+             ) e ON TRUE
+             WHERE d.criado_por IS NULL
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.tipo = 'cadastro_dino' AND p.referencia = d.id::text
+               )`,
+            [REGRAS.cadastro_dino.pontos]
+        );
+
+        await Pontos.tentar(
+            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
+             SELECT t.usuario_id, 'topico', $1, t.id::text
+             FROM topicos t
+             WHERE t.usuario_id IS NOT NULL
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = t.usuario_id
+                     AND p.tipo = 'topico'
+                     AND p.referencia = t.id::text
+               )`,
             [REGRAS.topico.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
              SELECT DISTINCT e.usuario_id, 'foto_dino', $1, e.dinossauro_id::text
              FROM edicoes e
              WHERE e.campo = 'foto' AND e.valor_novo IS NOT NULL
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = e.usuario_id
+                     AND p.tipo = 'foto_dino'
+                     AND p.referencia = e.dinossauro_id::text
+               )`,
             [REGRAS.foto_dino.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'foto_perfil', $1, 'perfil'
-             FROM usuarios
-             WHERE foto IS NOT NULL AND TRIM(foto) <> ''
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT u.id, 'foto_perfil', $1, 'perfil'
+             FROM usuarios u
+             WHERE u.foto IS NOT NULL AND TRIM(u.foto) <> ''
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = u.id AND p.tipo = 'foto_perfil' AND p.referencia = 'perfil'
+               )`,
             [REGRAS.foto_perfil.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'descricao_perfil', $1, 'perfil'
-             FROM usuarios
-             WHERE descricao IS NOT NULL AND TRIM(descricao) <> ''
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT u.id, 'descricao_perfil', $1, 'perfil'
+             FROM usuarios u
+             WHERE u.descricao IS NOT NULL AND TRIM(u.descricao) <> ''
+               AND NOT EXISTS (
+                   SELECT 1 FROM pontos_eventos p
+                   WHERE p.usuario_id = u.id AND p.tipo = 'descricao_perfil' AND p.referencia = 'perfil'
+               )`,
             [REGRAS.descricao_perfil.pontos]
         );
 
-        await pool.query(
+        await Pontos.tentar(
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT e.usuario_id,
-                    'edicao_ficha',
-                    $1,
-                    e.dinossauro_id::text || ':' || to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD')
-             FROM edicoes e
-             WHERE e.campo NOT IN ('foto', 'topico')
-             GROUP BY e.usuario_id, e.dinossauro_id, to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD')
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+             SELECT x.usuario_id, 'edicao_ficha', $1, x.referencia
+             FROM (
+                 SELECT e.usuario_id,
+                        e.dinossauro_id::text || ':' || to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS referencia
+                 FROM edicoes e
+                 WHERE e.campo NOT IN ('foto', 'topico')
+                 GROUP BY e.usuario_id, e.dinossauro_id, to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD')
+             ) x
+             WHERE NOT EXISTS (
+                 SELECT 1 FROM pontos_eventos p
+                 WHERE p.usuario_id = x.usuario_id
+                   AND p.tipo = 'edicao_ficha'
+                   AND p.referencia = x.referencia
+             )`,
             [REGRAS.edicao_ficha.pontos]
-        );
-
-        await pool.query(
-            `UPDATE usuarios
-             SET pontos = COALESCE((
-                 SELECT SUM(pontos_eventos.pontos)::int
-                 FROM pontos_eventos
-                 WHERE pontos_eventos.usuario_id = usuarios.id
-             ), 0)`
         );
     }
 
     static async sincronizarUsuario(usuarioId) {
+        await Pontos.sincronizar();
+
         const id = parseInt(usuarioId, 10);
         if (!id) return;
 
         try {
-            await Pontos.aplicarSincronizacaoUsuario(id);
+            const User = require('./User');
+            const usuario = await User.buscarPorId(id);
+            await Pontos.completarPerfil(usuario);
+            await Pontos.recalcularTodos();
         } catch (erro) {
             console.error('Falha ao sincronizar pontos do usuário', id, erro.message);
         }
-    }
-
-    static async aplicarSincronizacaoUsuario(id) {
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'confirmar', $1, 'conta'
-             FROM usuarios
-             WHERE confirmado = TRUE AND id = $2
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.confirmar.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT criado_por, 'cadastro_dino', $1, dinossauros.id::text
-             FROM dinossauros
-             WHERE criado_por = $2
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.cadastro_dino.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT usuario_id, 'topico', $1, topicos.id::text
-             FROM topicos
-             WHERE usuario_id = $2
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.topico.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT DISTINCT e.usuario_id, 'foto_dino', $1, e.dinossauro_id::text
-             FROM edicoes e
-             WHERE e.usuario_id = $2 AND e.campo = 'foto' AND e.valor_novo IS NOT NULL
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.foto_dino.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'foto_perfil', $1, 'perfil'
-             FROM usuarios
-             WHERE id = $2 AND foto IS NOT NULL AND TRIM(foto) <> ''
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.foto_perfil.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT id, 'descricao_perfil', $1, 'perfil'
-             FROM usuarios
-             WHERE id = $2 AND descricao IS NOT NULL AND TRIM(descricao) <> ''
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.descricao_perfil.pontos, id]
-        );
-
-        await pool.query(
-            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
-             SELECT e.usuario_id,
-                    'edicao_ficha',
-                    $1,
-                    e.dinossauro_id::text || ':' || to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD')
-             FROM edicoes e
-             WHERE e.usuario_id = $2 AND e.campo NOT IN ('foto', 'topico')
-             GROUP BY e.usuario_id, e.dinossauro_id, to_char((e.created_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD')
-             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
-            [REGRAS.edicao_ficha.pontos, id]
-        );
-
-        await pool.query(
-            `UPDATE usuarios
-             SET pontos = COALESCE((
-                 SELECT SUM(pontos_eventos.pontos)::int
-                 FROM pontos_eventos
-                 WHERE pontos_eventos.usuario_id = $1
-             ), 0)
-             WHERE id = $1`,
-            [id]
-        );
     }
 }
 
