@@ -1,6 +1,9 @@
 const pool = require('../db/pool');
 const { REGRAS, resumir } = require('../config/pontos');
 
+let ultimaSincronizacao = 0;
+const INTERVALO_SYNC_MS = 8000;
+
 class Pontos {
     static resumir = resumir;
 
@@ -103,9 +106,16 @@ class Pontos {
     }
 
     static async sincronizar() {
+        const agora = Date.now();
+        if (ultimaSincronizacao && agora - ultimaSincronizacao < INTERVALO_SYNC_MS) {
+            return;
+        }
+        ultimaSincronizacao = agora;
+
         try {
             await Pontos.aplicarSincronizacaoGeral();
         } catch (erro) {
+            ultimaSincronizacao = 0;
             console.error('Falha ao sincronizar pontos:', erro.message);
         }
     }

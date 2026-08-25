@@ -35,8 +35,16 @@ export function AuthProvider({ children }) {
         .catch(() => {})
     }
 
+    atualizarPontos()
+    const depois = window.setTimeout(atualizarPontos, 2000)
     window.addEventListener('focus', atualizarPontos)
-    return () => window.removeEventListener('focus', atualizarPontos)
+    document.addEventListener('visibilitychange', atualizarPontos)
+
+    return () => {
+      window.clearTimeout(depois)
+      window.removeEventListener('focus', atualizarPontos)
+      document.removeEventListener('visibilitychange', atualizarPontos)
+    }
   }, [])
 
   const value = useMemo(
@@ -48,6 +56,9 @@ export function AuthProvider({ children }) {
         const dados = await loginApi(credenciais)
         setToken(dados.token)
         setUsuario(dados.usuario)
+        getPerfil()
+          .then((perfil) => setUsuario(perfil))
+          .catch(() => {})
         return dados
       },
       entrarComSessao({ token, usuario }) {

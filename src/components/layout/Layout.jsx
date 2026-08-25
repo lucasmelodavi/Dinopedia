@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import Footer from './Footer'
 import Header from './Header'
+import PainelPontos from './PainelPontos'
 
 export default function Layout() {
   const { pathname } = useLocation()
@@ -10,6 +11,7 @@ export default function Layout() {
   return (
     <div className="app">
       <Header />
+      <PainelPontos />
       <main
         className={
           home ? 'conteudo conteudo--home' : largo ? 'conteudo conteudo--perfil' : 'conteudo'

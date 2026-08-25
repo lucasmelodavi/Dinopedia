@@ -4,8 +4,11 @@ const Edicao = require('../models/Edicao');
 const Pontos = require('../models/Pontos');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
+    await Pontos.sincronizar();
     await Pontos.sincronizarUsuario(usuario.id);
-    const atual = (await User.buscarPorId(usuario.id)) || usuario;
+    let atual = (await User.buscarPorId(usuario.id)) || usuario;
+    await Pontos.completarPerfil(atual);
+    atual = (await User.buscarPorId(usuario.id)) || atual;
     const [edicoes, contagem, seguidores, seguindo, historicoPontos] = await Promise.all([
         Edicao.listarPorUsuario(atual.id),
         Follow.contar(atual.id),
@@ -68,6 +71,7 @@ const listarUsuarios = async (req, res) => {
 const ranking = async (req, res) => {
     try {
         const { REGRAS, NIVEIS } = require('../config/pontos');
+        await Pontos.sincronizar();
         const data = await Pontos.ranking(req.query.limit);
         res.json({
             data,

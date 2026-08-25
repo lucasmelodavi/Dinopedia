@@ -174,6 +174,7 @@ export default function Perfil() {
         setPerfil(dados)
         setTextoBio(dados.descricao || '')
         setDinossauros(meus)
+        atualizarUsuario(dados)
       } catch (falha) {
         if (ativo) {
           const texto = falha.message || 'Não foi possível carregar o perfil.'

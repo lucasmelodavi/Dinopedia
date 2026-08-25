@@ -106,9 +106,6 @@ export default function Header() {
       <div className="cabecalho-acoes">
         {autenticado ? (
           <>
-            <NavLink to="/ranking" className="cabecalho-pontos" title={usuario?.nivel?.nome || 'Pontos'}>
-              {usuario?.pontos || 0} pts
-            </NavLink>
             <NavLink to="/dinossauros/novo" className="botao">
               Adicionar
             </NavLink>

@@ -967,22 +967,111 @@ a {
   gap: 8px;
 }
 
-.cabecalho-pontos {
-  display: inline-flex;
-  align-items: center;
-  padding: 11px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  color: var(--green-2);
-  font-weight: 700;
-  font-size: 0.9rem;
-  background: #0e130e;
+.painel-pontos {
+  position: fixed;
+  top: 38%;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: stretch;
 }
 
-.cabecalho-pontos:hover,
-.cabecalho-pontos.active {
-  border-color: var(--green);
-  color: #fff;
+.painel-pontos-aba {
+  width: 48px;
+  padding: 14px 6px;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: #0e130e;
+  color: var(--green-2);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.painel-pontos-aba small {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.painel-pontos-caixa {
+  width: 280px;
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 16px 0 0 16px;
+  background: #101610;
+  box-shadow: -12px 8px 30px rgba(0, 0, 0, 0.35);
+  transform: translateX(110%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.painel-pontos:hover .painel-pontos-caixa,
+.painel-pontos.is-aberto .painel-pontos-caixa {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.painel-pontos-total {
+  margin: 0;
+  color: var(--green-2);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.painel-pontos-caixa strong {
+  display: block;
+  margin: 4px 0 8px;
+}
+
+.painel-pontos-caixa p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.painel-pontos-titulo {
+  color: #fff !important;
+  font-weight: 700;
+  margin-top: 8px !important;
+}
+
+.painel-pontos-caixa ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.painel-pontos-caixa li {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.painel-pontos-caixa li span {
+  color: var(--green-2);
+  font-weight: 800;
+}
+
+.painel-pontos-caixa .botao {
+  width: 100%;
+  margin-top: 8px;
 }
 
 .cabecalho-avatar {
