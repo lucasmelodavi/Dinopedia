@@ -425,6 +425,23 @@ export default function Perfil() {
               {perfil?.criador ? <span className="perfil-badge perfil-badge-criador">Criador</span> : null}
             </div>
             {meuPerfil && perfil?.email ? <p className="perfil-meta">{perfil.email}</p> : null}
+            {conquistas.desbloqueadas > 0 ? (
+              <ul className="perfil-medalhas" aria-label="Conquistas desbloqueadas">
+                {conquistas.itens
+                  .filter((conquista) => conquista.desbloqueada)
+                  .map((conquista) => (
+                    <li key={conquista.id} title={conquista.nome} aria-label={conquista.nome}>
+                      {conquista.simbolo}
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="perfil-meta">
+                {meuPerfil
+                  ? 'Ainda sem conquistas. Contribua na DinoPédia para desbloquear as primeiras.'
+                  : 'Esta pessoa ainda não desbloqueou conquistas.'}
+              </p>
+            )}
             {!meuPerfil ? (
               <p className="perfil-bio">
                 {perfil?.descricao?.trim()
@@ -513,7 +530,9 @@ export default function Perfil() {
             : 'Marcas do que esta pessoa já fez na DinoPédia.'}
         </p>
         <ul className="lista-conquistas">
-          {conquistas.itens.map((conquista) => (
+          {[...conquistas.itens]
+            .sort((a, b) => Number(b.desbloqueada) - Number(a.desbloqueada))
+            .map((conquista) => (
             <li
               key={conquista.id}
               className={`conquista ${conquista.desbloqueada ? 'is-on' : 'is-off'}`}
@@ -524,6 +543,16 @@ export default function Perfil() {
               </span>
               <strong>{conquista.nome}</strong>
               <p>{conquista.descricao}</p>
+              <div className="conquista-barra" aria-hidden="true">
+                <span
+                  style={{
+                    width: `${Math.max(
+                      conquista.desbloqueada ? 100 : 0,
+                      Math.round((conquista.atual / conquista.meta) * 100),
+                    )}%`,
+                  }}
+                />
+              </div>
               <small>
                 {conquista.desbloqueada
                   ? 'Desbloqueada'

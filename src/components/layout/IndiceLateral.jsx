@@ -153,7 +153,7 @@ export default function IndiceLateral({ aberto, onMudar }) {
   const conta = autenticado
     ? [
         { to: '/dinossauros/novo', label: 'Adicionar dinossauro', icon: 'mais' },
-        { to: '/perfil#conquistas', label: 'Conquistas', icon: 'trofeu', ativo: false },
+        { to: '/perfil#conquistas', label: 'Conquistas', icon: 'trofeu' },
         { to: '/perfil#enfeites', label: 'Enfeites', icon: 'estrela', ativo: false },
         { to: '/perfil#meus-topicos', label: 'Meus tópicos', icon: 'topico', ativo: false },
         { to: '/perfil#edicoes', label: 'Minhas edições', icon: 'edicao', ativo: false },

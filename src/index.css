@@ -944,6 +944,26 @@ a {
   margin: 0 0 8px;
 }
 
+.perfil-medalhas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.perfil-medalhas li {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #0e130e;
+  font-size: 1.15rem;
+}
+
 .perfil-bio-form {
   margin: 8px 0 12px;
   max-width: 36rem;
@@ -1046,8 +1066,36 @@ a {
   line-height: 1;
 }
 
+.conquista.is-on {
+  border-color: rgba(94, 163, 58, 0.55);
+  background: #121a12;
+}
+
+.conquista-barra {
+  height: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #1a221a;
+}
+
+.conquista-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--green);
+}
+
+.conquista.is-off .conquista-barra span {
+  background: #4a5a4a;
+}
+
 .conquista.is-off {
   opacity: 0.45;
+}
+
+.conquista.is-off small {
+  color: var(--muted);
 }
 
 .conquista.is-off small {
