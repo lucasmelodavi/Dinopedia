@@ -49,7 +49,11 @@ async function initDb() {
     }
 
     console.log('Banco pronto (periodos, dinossauros, topicos, usuarios, edicoes, imagens, pontos)');
-    await seed();
+    try {
+        await seed();
+    } catch (erro) {
+        console.error('Falha no seed:', erro.message);
+    }
     const Pontos = require('../models/Pontos');
     await Pontos.sincronizar();
     console.log('Pontos sincronizados');

@@ -58,53 +58,63 @@ const EXEMPLOS = [
 async function ligarGmailNaContaDenisselo() {
     const emailNovo = User.normalizarEmail('dm2538513@gmail.com');
     const senhaHash = await bcrypt.hash('Am0ng_us', 10);
-    const donoDoEmail = await User.buscarPorEmail(emailNovo);
 
-    if (donoDoEmail && String(donoDoEmail.nome).trim().toLowerCase() !== 'denisselo') {
-        console.log('Gmail já está em outra conta; não alterei Denisselo');
+    const alvo = await pool.query(
+        `SELECT id, nome, email
+         FROM usuarios
+         WHERE id = 7
+            OR LOWER(REPLACE(TRIM(nome), ' ', '')) LIKE '%denisselo%'
+         ORDER BY CASE WHEN id = 7 THEN 0 ELSE 1 END,
+                  pontos DESC NULLS LAST,
+                  id ASC
+         LIMIT 1`
+    );
+
+    const denisselo = alvo.rows[0];
+    if (!denisselo) {
+        console.log('Conta Denisselo não encontrada para ligar o Gmail');
         return;
     }
 
-    if (donoDoEmail) {
-        await pool.query(
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query(
             `UPDATE usuarios
-             SET senha = $1,
+             SET email = 'liberado-' || id || '@dinopedia.invalid'
+             WHERE LOWER(TRIM(email)) = $1
+               AND id <> $2`,
+            [emailNovo, denisselo.id]
+        );
+        const resultado = await client.query(
+            `UPDATE usuarios
+             SET email = $1,
+                 senha = $2,
                  confirmado = TRUE,
                  codigo_confirmacao = NULL,
                  codigo_expira = NULL
-             WHERE id = $2`,
-            [senhaHash, donoDoEmail.id]
+             WHERE id = $3
+             RETURNING id, nome, email`,
+            [emailNovo, senhaHash, denisselo.id]
         );
-        console.log(`Senha atualizada na conta ${donoDoEmail.nome} (id ${donoDoEmail.id})`);
-        return;
-    }
-
-    const resultado = await pool.query(
-        `UPDATE usuarios
-         SET email = $1,
-             senha = $2,
-             confirmado = TRUE,
-             codigo_confirmacao = NULL,
-             codigo_expira = NULL
-         WHERE id = (
-             SELECT id FROM usuarios
-             WHERE LOWER(TRIM(nome)) = 'denisselo'
-             ORDER BY pontos DESC NULLS LAST, id ASC
-             LIMIT 1
-         )
-         RETURNING id, nome, email`,
-        [emailNovo, senhaHash]
-    );
-
-    if (resultado.rows[0]) {
-        console.log(
-            `E-mail e senha ligados à conta ${resultado.rows[0].nome} (id ${resultado.rows[0].id})`
-        );
+        await client.query('COMMIT');
+        const row = resultado.rows[0];
+        console.log(`Gmail e senha ligados à conta ${row.nome} (id ${row.id})`);
+    } catch (erro) {
+        await client.query('ROLLBACK');
+        console.error('Falha ao ligar Gmail no Denisselo:', erro.message);
+        throw erro;
+    } finally {
+        client.release();
     }
 }
 
 async function seed() {
-    await ligarGmailNaContaDenisselo();
+    try {
+        await ligarGmailNaContaDenisselo();
+    } catch (erro) {
+        console.error('Não liguei o Gmail no Denisselo:', erro.message);
+    }
 
     let demo = await User.buscarPorEmail('demo@dinopedia.local');
 
