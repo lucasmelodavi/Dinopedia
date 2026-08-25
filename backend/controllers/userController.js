@@ -4,6 +4,7 @@ const Edicao = require('../models/Edicao');
 const Pontos = require('../models/Pontos');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
+    await Pontos.sincronizarUsuario(usuario.id);
     const atual = (await User.buscarPorId(usuario.id)) || usuario;
     const [edicoes, contagem, seguidores, seguindo, historicoPontos] = await Promise.all([
         Edicao.listarPorUsuario(atual.id),

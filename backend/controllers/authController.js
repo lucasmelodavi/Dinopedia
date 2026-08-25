@@ -120,7 +120,10 @@ const login = async (req, res) => {
             return res.status(401).json({ erro: 'Senha incorreta' });
         }
 
-        res.json(emitirSessao(usuario));
+        await Pontos.sincronizarUsuario(usuario.id);
+        const atualizado = await User.buscarPorId(usuario.id);
+
+        res.json(emitirSessao(atualizado));
     } catch (erro) {
         res.status(500).json({ erro: 'Erro ao fazer login' });
     }

@@ -24,6 +24,19 @@ export function AuthProvider({ children }) {
       .finally(() => setCarregando(false))
   }, [])
 
+  useEffect(() => {
+    function atualizarPontos() {
+      const token = getToken()
+      if (!token) return
+      getPerfil()
+        .then((dados) => setUsuario(dados))
+        .catch(() => {})
+    }
+
+    window.addEventListener('focus', atualizarPontos)
+    return () => window.removeEventListener('focus', atualizarPontos)
+  }, [])
+
   const value = useMemo(
     () => ({
       usuario,
