@@ -4,7 +4,8 @@ const REGRAS = {
     edicao_ficha: { pontos: 10, label: 'Editou uma ficha' },
     topico: { pontos: 20, label: 'Adicionou um tópico' },
     foto_dino: { pontos: 15, label: 'Enviou foto da ficha' },
-    foto_perfil: { pontos: 10, label: 'Enviou foto de perfil' }
+    foto_perfil: { pontos: 10, label: 'Colocou foto ou avatar no perfil' },
+    descricao_perfil: { pontos: 10, label: 'Escreveu a descrição do perfil' }
 };
 
 const NIVEIS = [

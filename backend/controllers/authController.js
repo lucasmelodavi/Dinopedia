@@ -248,6 +248,7 @@ const atualizarPerfil = async (req, res) => {
         }
 
         const usuario = await User.atualizar(req.usuarioId, dados);
+        await Pontos.completarPerfil(usuario);
         const mensagem = temDescricao && !temAvatar
             ? 'Descrição atualizada!'
             : 'Perfil atualizado!';
@@ -264,8 +265,8 @@ const uploadFotoPerfil = async (req, res) => {
         }
 
         const caminhoFoto = await Imagem.persistirMulter(req.file);
-        await User.atualizarFoto(req.usuarioId, caminhoFoto);
-        await Pontos.ganhar(req.usuarioId, 'foto_perfil', 'perfil');
+        const atualizado = await User.atualizarFoto(req.usuarioId, caminhoFoto);
+        await Pontos.completarPerfil(atualizado);
         const usuario = await User.buscarPorId(req.usuarioId);
         await responderPerfil(res, usuario, 'Foto de perfil enviada!');
     } catch (erro) {

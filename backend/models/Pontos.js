@@ -45,6 +45,29 @@ class Pontos {
         return regra.pontos;
     }
 
+    static temFoto(foto) {
+        return Boolean(String(foto || '').trim());
+    }
+
+    static temDescricao(texto) {
+        return Boolean(String(texto || '').trim());
+    }
+
+    static async completarPerfil(usuario) {
+        if (!usuario || !usuario.id) return;
+
+        try {
+            if (Pontos.temFoto(usuario.foto)) {
+                await Pontos.ganhar(usuario.id, 'foto_perfil', 'perfil');
+            }
+            if (Pontos.temDescricao(usuario.descricao)) {
+                await Pontos.ganhar(usuario.id, 'descricao_perfil', 'perfil');
+            }
+        } catch (erro) {
+            console.error('Falha ao pontuar perfil completo', usuario.id, erro.message);
+        }
+    }
+
     static async listarPorUsuario(usuarioId, limit = 12) {
         const teto = Math.min(parseInt(limit, 10) || 12, 40);
         const resultado = await pool.query(
@@ -128,9 +151,18 @@ class Pontos {
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
              SELECT id, 'foto_perfil', $1, 'perfil'
              FROM usuarios
-             WHERE foto LIKE '/uploads/%'
+             WHERE foto IS NOT NULL AND TRIM(foto) <> ''
              ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
             [REGRAS.foto_perfil.pontos]
+        );
+
+        await pool.query(
+            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
+             SELECT id, 'descricao_perfil', $1, 'perfil'
+             FROM usuarios
+             WHERE descricao IS NOT NULL AND TRIM(descricao) <> ''
+             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+            [REGRAS.descricao_perfil.pontos]
         );
 
         await pool.query(
@@ -209,9 +241,18 @@ class Pontos {
             `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
              SELECT id, 'foto_perfil', $1, 'perfil'
              FROM usuarios
-             WHERE id = $2 AND foto LIKE '/uploads/%'
+             WHERE id = $2 AND foto IS NOT NULL AND TRIM(foto) <> ''
              ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
             [REGRAS.foto_perfil.pontos, id]
+        );
+
+        await pool.query(
+            `INSERT INTO pontos_eventos (usuario_id, tipo, pontos, referencia)
+             SELECT id, 'descricao_perfil', $1, 'perfil'
+             FROM usuarios
+             WHERE id = $2 AND descricao IS NOT NULL AND TRIM(descricao) <> ''
+             ON CONFLICT (usuario_id, tipo, referencia) DO NOTHING`,
+            [REGRAS.descricao_perfil.pontos, id]
         );
 
         await pool.query(

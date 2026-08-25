@@ -331,6 +331,9 @@ export default function Perfil() {
                     placeholder="Conte um pouco sobre você, seus dinos favoritos ou o que você pesquisa."
                   />
                 </label>
+                <p className="bloco-curiosidades-ajuda">
+                  Foto ou avatar vale +10 pontos. Descrição vale +10 pontos.
+                </p>
                 <div className="perfil-bio-acoes">
                   <small>{textoBio.length}/400</small>
                   <button className="botao" type="submit" disabled={salvandoBio}>

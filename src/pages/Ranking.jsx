@@ -28,8 +28,8 @@ export default function Ranking() {
     <section className="pagina pagina-perfil">
       <h1>Ranking de pontos</h1>
       <p>
-        Contribua com fichas, fotos e tópicos para subir de nível. Quem mais
-        ajuda a DinoPédia aparece aqui.
+        Contribua com fichas, complete o perfil (foto e descrição) e suba de
+        nível. Quem mais ajuda a DinoPédia aparece aqui.
       </p>
 
       {erro ? <p className="alerta">{erro}</p> : null}

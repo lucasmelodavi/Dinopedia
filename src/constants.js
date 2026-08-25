@@ -31,7 +31,8 @@ export const REGRAS_PONTOS = [
   { pontos: 20, label: 'Adicionar um tópico' },
   { pontos: 15, label: 'Enviar foto da ficha' },
   { pontos: 10, label: 'Editar uma ficha (1 vez por dia em cada dino)' },
-  { pontos: 10, label: 'Enviar foto de perfil' },
+  { pontos: 10, label: 'Colocar foto ou avatar no perfil' },
+  { pontos: 10, label: 'Escrever a descrição do perfil' },
   { pontos: 10, label: 'Confirmar a conta' },
 ]
 
