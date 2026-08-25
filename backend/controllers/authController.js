@@ -105,7 +105,10 @@ const login = async (req, res) => {
         const usuario = await User.buscarPorEmail(email);
 
         if (!usuario) {
-            return res.status(404).json({ erro: 'DinoUsuário não encontrado' });
+            return res.status(404).json({
+                erro: 'Não achamos uma conta com esse e-mail. Crie uma no cadastro ou confira se digitou certo.',
+                codigo: 'conta_nao_encontrada'
+            });
         }
 
         if (!usuario.confirmado) {

@@ -11,8 +11,17 @@ class User {
     static AVATARES_VALIDOS = AVATARES_VALIDOS;
     static DESCRICAO_MAX = 400;
 
+    static normalizarEmail(valor) {
+        return String(valor || '')
+            .normalize('NFKC')
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
+            .replace(/\s+/g, '')
+            .trim()
+            .toLowerCase();
+    }
+
     static ehCriador(email) {
-        return String(email || '').trim().toLowerCase() === config.emailCriador;
+        return User.normalizarEmail(email) === config.emailCriador;
     }
 
     static mapear(row) {
@@ -104,12 +113,14 @@ class User {
             throw new Error('Nome, email e senha são obrigatórios');
         }
 
+        const emailNormalizado = User.normalizarEmail(email);
+
         try {
             const resultado = await pool.query(
                 `INSERT INTO usuarios (nome, email, senha, confirmado, codigo_confirmacao, codigo_expira)
                  VALUES ($1, $2, $3, $4, $5, $6)
                  RETURNING *`,
-                [nome, email, senha, confirmado, codigoConfirmacao, codigoExpira]
+                [nome, emailNormalizado, senha, confirmado, codigoConfirmacao, codigoExpira]
             );
 
             return User.mapear(resultado.rows[0]);
@@ -122,9 +133,12 @@ class User {
     }
 
     static async buscarPorEmail(email) {
+        const emailNormalizado = User.normalizarEmail(email);
+        if (!emailNormalizado) return null;
+
         const resultado = await pool.query(
-            'SELECT * FROM usuarios WHERE LOWER(email) = LOWER($1)',
-            [email]
+            'SELECT * FROM usuarios WHERE LOWER(TRIM(email)) = $1',
+            [emailNormalizado]
         );
         return User.mapear(resultado.rows[0]);
     }
@@ -138,12 +152,13 @@ class User {
     }
 
     static async confirmarEmail(email) {
+        const emailNormalizado = User.normalizarEmail(email);
         const resultado = await pool.query(
             `UPDATE usuarios
              SET confirmado = TRUE, codigo_confirmacao = NULL, codigo_expira = NULL
-             WHERE email = $1
+             WHERE LOWER(TRIM(email)) = $1
              RETURNING *`,
-            [email]
+            [emailNormalizado]
         );
 
         if (!resultado.rows[0]) {
@@ -154,12 +169,13 @@ class User {
     }
 
     static async atualizarCodigo(email, codigo, codigoExpira) {
+        const emailNormalizado = User.normalizarEmail(email);
         const resultado = await pool.query(
             `UPDATE usuarios
              SET codigo_confirmacao = $1, codigo_expira = $2
-             WHERE email = $3
+             WHERE LOWER(TRIM(email)) = $3
              RETURNING *`,
-            [codigo, codigoExpira, email]
+            [codigo, codigoExpira, emailNormalizado]
         );
 
         if (!resultado.rows[0]) {
