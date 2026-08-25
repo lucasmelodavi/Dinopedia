@@ -42,7 +42,9 @@ export default function Inicio() {
   return (
     <div className="home">
       <section className="hero">
-        <img className="hero-trex" src="/hero-trex.png" alt="Tiranossauro rex" />
+        <div className="hero-foto">
+          <img className="hero-trex" src="/hero-trex.png?v=2" alt="Tiranossauro rex" />
+        </div>
         <div className="hero-sombra" />
 
         <div className="hero-texto">
