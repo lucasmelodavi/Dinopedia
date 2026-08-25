@@ -872,6 +872,107 @@ a {
   margin-top: 8px;
 }
 
+.perfil-atividade {
+  overflow: hidden;
+}
+
+.perfil-heatmap {
+  --celula: 9px;
+  --folga: 2px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.perfil-heatmap-dias {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 22px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: var(--celula);
+}
+
+.perfil-heatmap-dias .perfil-heatmap-semana span {
+  height: var(--celula);
+}
+
+.perfil-heatmap-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: min-content;
+}
+
+.perfil-heatmap-meses,
+.perfil-heatmap-grade {
+  display: flex;
+  gap: var(--folga);
+}
+
+.perfil-heatmap-meses {
+  height: 13px;
+}
+
+.perfil-heatmap-mes {
+  flex: 0 0 var(--celula);
+  width: var(--celula);
+  overflow: visible;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 13px;
+}
+
+.perfil-heatmap-semana {
+  display: flex;
+  flex-direction: column;
+  gap: var(--folga);
+}
+
+.perfil-heatmap-celula {
+  display: block;
+  width: var(--celula);
+  height: var(--celula);
+  flex: 0 0 var(--celula);
+  border-radius: 2px;
+  background: #1a211a;
+}
+
+.perfil-heatmap-celula.n1 {
+  background: #213d18;
+}
+
+.perfil-heatmap-celula.n2 {
+  background: #2f6a22;
+}
+
+.perfil-heatmap-celula.n3 {
+  background: #5ea33a;
+}
+
+.perfil-heatmap-celula.n4 {
+  background: #8ad35a;
+}
+
+.perfil-heatmap-celula.is-fora {
+  opacity: 0.35;
+}
+
+.perfil-heatmap-legenda {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .perfil-edicoes {
   list-style: none;
   margin: 0 0 14px;

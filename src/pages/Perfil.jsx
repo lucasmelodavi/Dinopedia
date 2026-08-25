@@ -42,90 +42,138 @@ function tempoRelativo(valor) {
   return formatarData(valor)
 }
 
-function mesesAtividade(edicoes, quantidade = 6) {
-  const agora = new Date()
-  const meses = []
-
-  for (let i = quantidade - 1; i >= 0; i -= 1) {
-    const data = new Date(agora.getFullYear(), agora.getMonth() - i, 1)
-    meses.push({
-      chave: `${data.getFullYear()}-${data.getMonth()}`,
-      label: data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
-      total: 0,
-    })
-  }
-
-  edicoes.forEach((edicao) => {
-    const data = new Date(edicao.data)
-    const chave = `${data.getFullYear()}-${data.getMonth()}`
-    const mes = meses.find((item) => item.chave === chave)
-    if (mes) mes.total += 1
-  })
-
-  return meses
+function inicioDoDia(valor) {
+  const data = new Date(valor)
+  if (Number.isNaN(data.getTime())) return null
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate())
 }
 
-function GraficoAtividade({ meses }) {
-  const largura = 520
-  const altura = 180
-  const padding = { top: 16, right: 12, bottom: 28, left: 8 }
-  const maximo = Math.max(1, ...meses.map((mes) => mes.total))
-  const areaW = largura - padding.left - padding.right
-  const areaH = altura - padding.top - padding.bottom
-  const passo = meses.length > 1 ? areaW / (meses.length - 1) : areaW
+function chaveDia(valor) {
+  const data = inicioDoDia(valor)
+  if (!data) return null
+  const mes = String(data.getMonth() + 1).padStart(2, '0')
+  const dia = String(data.getDate()).padStart(2, '0')
+  return `${data.getFullYear()}-${mes}-${dia}`
+}
 
-  const pontos = meses.map((mes, indice) => {
-    const x = padding.left + indice * passo
-    const y = padding.top + areaH - (mes.total / maximo) * areaH
-    return `${x},${y}`
+function nivelAtividade(total) {
+  if (!total) return 0
+  if (total === 1) return 1
+  if (total <= 3) return 2
+  if (total <= 6) return 3
+  return 4
+}
+
+function tituloDia(dia) {
+  if (!dia?.data || dia.fora || dia.futuro) return undefined
+  const quando = dia.data.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
   })
+  if (dia.total === 1) return `1 contribuição em ${quando}`
+  return `${dia.total} contribuições em ${quando}`
+}
 
-  const area = [
-    `${padding.left},${padding.top + areaH}`,
-    ...pontos,
-    `${padding.left + (meses.length - 1) * passo},${padding.top + areaH}`,
-  ].join(' ')
+function diasAtividade({ edicoes = [], topicos = [], dinossauros = [] }) {
+  const hoje = inicioDoDia(new Date())
+  const inicio = new Date(hoje)
+  inicio.setDate(inicio.getDate() - 364)
 
+  const comecoGrade = new Date(inicio)
+  comecoGrade.setDate(comecoGrade.getDate() - comecoGrade.getDay())
+
+  const contagem = new Map()
+
+  function somar(valor) {
+    const data = inicioDoDia(valor)
+    const chave = chaveDia(valor)
+    if (!data || !chave || data < inicio || data > hoje) return
+    contagem.set(chave, (contagem.get(chave) || 0) + 1)
+  }
+
+  edicoes.forEach((edicao) => somar(edicao.data))
+  topicos.forEach((topico) => somar(topico.criadoEm || topico.atualizadoEm))
+  dinossauros.forEach((dino) => somar(dino.criadoEm))
+
+  const semanas = []
+  let semana = []
+  const cursor = new Date(comecoGrade)
+
+  while (cursor <= hoje || semana.length > 0) {
+    const chave = chaveDia(cursor)
+    const fora = cursor < inicio
+    const futuro = cursor > hoje
+    semana.push({
+      chave: futuro ? `futuro-${semana.length}` : chave,
+      data: new Date(cursor),
+      total: fora || futuro ? 0 : contagem.get(chave) || 0,
+      fora,
+      futuro,
+    })
+
+    cursor.setDate(cursor.getDate() + 1)
+
+    if (semana.length === 7) {
+      semanas.push(semana)
+      semana = []
+      if (cursor > hoje) break
+    }
+  }
+
+  const total = [...contagem.values()].reduce((soma, valor) => soma + valor, 0)
+  return { semanas, total }
+}
+
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+function GraficoAtividade({ semanas }) {
   return (
-    <svg className="perfil-grafico" viewBox={`0 0 ${largura} ${altura}`} role="img" aria-label="Contribuições ao longo do tempo">
-      <defs>
-        <linearGradient id="areaAtividade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#5ea33a" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#5ea33a" stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      {[0.25, 0.5, 0.75, 1].map((linha) => (
-        <line
-          key={linha}
-          x1={padding.left}
-          x2={largura - padding.right}
-          y1={padding.top + areaH * linha}
-          y2={padding.top + areaH * linha}
-          stroke="rgba(255,255,255,0.08)"
-        />
-      ))}
-      <polygon points={area} fill="url(#areaAtividade)" />
-      <polyline
-        points={pontos.join(' ')}
-        fill="none"
-        stroke="#7cc04f"
-        strokeWidth="3"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {meses.map((mes, indice) => {
-        const x = padding.left + indice * passo
-        const y = padding.top + areaH - (mes.total / maximo) * areaH
-        return (
-          <g key={mes.chave}>
-            <circle cx={x} cy={y} r="4" fill="#5ea33a" stroke="#0b0d0b" strokeWidth="2" />
-            <text x={x} y={altura - 6} textAnchor="middle" fill="#b7c2b0" fontSize="11">
-              {mes.label}
-            </text>
-          </g>
-        )
-      })}
-    </svg>
+    <div className="perfil-heatmap" role="img" aria-label="Contribuições por dia no último ano">
+      <div className="perfil-heatmap-dias" aria-hidden="true">
+        <div className="perfil-heatmap-meses" />
+        <div className="perfil-heatmap-semana">
+          <span />
+          <span>Seg</span>
+          <span />
+          <span>Qua</span>
+          <span />
+          <span>Sex</span>
+          <span />
+        </div>
+      </div>
+      <div className="perfil-heatmap-scroll">
+        <div className="perfil-heatmap-meses" aria-hidden="true">
+          {semanas.map((semana, indice) => {
+            const diaUm = semana.find(
+              (dia) => dia.data && dia.data.getDate() === 1 && !dia.futuro && !dia.fora,
+            )
+            const fonte =
+              diaUm ||
+              (indice === 0 ? semana.find((dia) => !dia.fora && !dia.futuro) : null)
+            const label = fonte ? MESES_CURTOS[fonte.data.getMonth()] : ''
+            return (
+              <span key={`mes-${semana[0].chave}`} className="perfil-heatmap-mes">
+                {label}
+              </span>
+            )
+          })}
+        </div>
+        <div className="perfil-heatmap-grade">
+          {semanas.map((semana) => (
+            <div key={semana[0].chave} className="perfil-heatmap-semana">
+              {semana.map((dia) => (
+                <span
+                  key={dia.chave}
+                  className={`perfil-heatmap-celula n${nivelAtividade(dia.total)}${dia.fora || dia.futuro ? ' is-fora' : ''}`}
+                  title={tituloDia(dia)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -220,7 +268,10 @@ export default function Perfil() {
 
   const edicoes = perfil?.edicoes || []
   const topicos = perfil?.topicos || []
-  const meses = useMemo(() => mesesAtividade(edicoes), [edicoes])
+  const atividade = useMemo(
+    () => diasAtividade({ edicoes, topicos, dinossauros }),
+    [edicoes, topicos, dinossauros],
+  )
   const edicoesVisiveis = historicoAberto ? edicoes : edicoes.slice(0, 5)
   const seguidores = perfil?.seguidores || []
   const seguindo = perfil?.seguindo || []
@@ -494,19 +545,27 @@ export default function Perfil() {
         ) : null}
       </article>
 
-      <div className="perfil-grade">
-        <article className="perfil-cartao">
-          <div className="perfil-cartao-topo">
-            <h2>Resumo de atividade</h2>
-            <span>Últimos 6 meses</span>
-          </div>
-          <p className="perfil-cartao-legenda">
-            {meuPerfil ? 'Suas contribuições ao longo do tempo' : 'Contribuições ao longo do tempo'}
-          </p>
-          <GraficoAtividade meses={meses} />
-        </article>
+      <article className="perfil-cartao perfil-atividade">
+        <div className="perfil-cartao-topo">
+          <h2>Resumo de atividade</h2>
+          <span>
+            {atividade.total} {atividade.total === 1 ? 'contribuição' : 'contribuições'} no último ano
+          </span>
+        </div>
+        <p className="perfil-cartao-legenda">
+          {meuPerfil ? 'Suas contribuições por dia' : 'Contribuições por dia'}
+        </p>
+        <GraficoAtividade semanas={atividade.semanas} />
+        <p className="perfil-heatmap-legenda">
+          Menos
+          {[0, 1, 2, 3, 4].map((nivel) => (
+            <span key={nivel} className={`perfil-heatmap-celula n${nivel}`} />
+          ))}
+          Mais
+        </p>
+      </article>
 
-        <article className="perfil-cartao" id="edicoes">
+      <article className="perfil-cartao" id="edicoes">
           <div className="perfil-cartao-topo">
             <h2>Edições recentes</h2>
           </div>
@@ -538,7 +597,6 @@ export default function Perfil() {
             </button>
           ) : null}
         </article>
-      </div>
 
       {(perfil?.historicoPontos || []).length > 0 ? (
         <article className="perfil-cartao">
