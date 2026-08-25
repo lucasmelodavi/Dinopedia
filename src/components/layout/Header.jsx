@@ -40,7 +40,11 @@ export default function Header({ onAbrirIndice, indiceAberto }) {
             <NavLink to="/dinossauros/novo" className="botao cabecalho-acao-extra">
               Adicionar
             </NavLink>
-            <NavLink to="/perfil" className="botao botao-fantasma cabecalho-perfil">
+            <NavLink
+              to="/perfil"
+              className="botao botao-fantasma cabecalho-perfil"
+              style={{ overflow: 'hidden', maxHeight: 44 }}
+            >
               <Avatar usuario={usuario} className="cabecalho-avatar" alt="" />
               <span className="cabecalho-perfil-texto">Perfil</span>
             </NavLink>

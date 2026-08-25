@@ -948,15 +948,16 @@ a {
 }
 
 .cabecalho-perfil img,
-.cabecalho-avatar img {
-  width: 22px;
-  height: 22px;
-  max-width: 22px;
-  max-height: 22px;
-  object-fit: cover;
-  display: block;
-  border-radius: 50%;
-  position: static;
+.cabecalho-avatar img,
+.cabecalho-perfil .avatar-foto {
+  width: 22px !important;
+  height: 22px !important;
+  max-width: 22px !important;
+  max-height: 22px !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: 50% !important;
+  position: static !important;
 }
 
 .perfil-nome {
@@ -1895,11 +1896,12 @@ a {
   }
 
   .cabecalho-perfil img,
-  .cabecalho-avatar img {
-    width: 28px;
-    height: 28px;
-    max-width: 28px;
-    max-height: 28px;
+  .cabecalho-avatar img,
+  .cabecalho-perfil .avatar-foto {
+    width: 28px !important;
+    height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
   }
 
   .indice-fundo {
