@@ -35,15 +35,9 @@ export function AuthProvider({ children }) {
         .catch(() => {})
     }
 
-    atualizarPontos()
-    const depois = window.setTimeout(atualizarPontos, 2000)
     window.addEventListener('focus', atualizarPontos)
-    document.addEventListener('visibilitychange', atualizarPontos)
-
     return () => {
-      window.clearTimeout(depois)
       window.removeEventListener('focus', atualizarPontos)
-      document.removeEventListener('visibilitychange', atualizarPontos)
     }
   }, [])
 

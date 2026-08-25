@@ -5,18 +5,19 @@ const Pontos = require('../models/Pontos');
 const Topico = require('../models/Topico');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
-    await Pontos.sincronizar();
-    await Pontos.sincronizarUsuario(usuario.id);
+    try {
+        await Pontos.sincronizarUsuario(usuario.id);
+    } catch (erro) {
+        console.error('Pontos no perfil', usuario.id, erro.message);
+    }
     let atual = (await User.buscarPorId(usuario.id)) || usuario;
-    await Pontos.completarPerfil(atual);
-    atual = (await User.buscarPorId(usuario.id)) || atual;
     const [edicoes, contagem, seguidores, seguindo, historicoPontos, topicos] = await Promise.all([
-        Edicao.listarPorUsuario(atual.id),
-        Follow.contar(atual.id),
-        Follow.listarSeguidores(atual.id),
-        Follow.listarSeguindo(atual.id),
-        Pontos.listarPorUsuario(atual.id),
-        Topico.listarPorUsuario(atual.id)
+        Edicao.listarPorUsuario(atual.id).catch(() => []),
+        Follow.contar(atual.id).catch(() => ({ seguidores: 0, seguindo: 0 })),
+        Follow.listarSeguidores(atual.id).catch(() => []),
+        Follow.listarSeguindo(atual.id).catch(() => []),
+        Pontos.listarPorUsuario(atual.id).catch(() => []),
+        Topico.listarPorUsuario(atual.id).catch(() => [])
     ]);
 
     const visivel = comEmail ? User.publico(atual) : User.visivel(atual);
@@ -75,7 +76,9 @@ const listarUsuarios = async (req, res) => {
 const ranking = async (req, res) => {
     try {
         const { REGRAS, NIVEIS } = require('../config/pontos');
-        await Pontos.sincronizar();
+        Pontos.sincronizar().catch((erro) => {
+            console.error('Pontos no ranking:', erro.message);
+        });
         const data = await Pontos.ranking(req.query.limit);
         res.json({
             data,

@@ -13,14 +13,23 @@ export default function Login() {
   async function handleSubmit(evento) {
     evento.preventDefault()
     setErro('')
+    const form = new FormData(evento.currentTarget)
+    const emailInformado = String(form.get('email') || email).trim()
+    const senhaInformada = String(form.get('senha') || senha)
+
+    if (!emailInformado || !senhaInformada) {
+      setErro('Preencha e-mail e senha.')
+      return
+    }
+
     setEnviando(true)
 
     try {
-      await login({ email: email.trim(), senha })
+      await login({ email: emailInformado, senha: senhaInformada })
       navigate('/', { replace: true })
     } catch (falha) {
       if (falha.status === 403) {
-        const destino = falha.email || email.trim()
+        const destino = falha.email || emailInformado
         navigate(`/confirmar?email=${encodeURIComponent(destino)}`)
         return
       }
@@ -31,7 +40,7 @@ export default function Login() {
   }
 
   return (
-    <section className="pagina">
+    <section className="pagina pagina-auth">
       <h1>Entrar</h1>
       <p>Entre com o e-mail da sua conta, o que for: Gmail, Outlook ou outro.</p>
 
@@ -43,7 +52,12 @@ export default function Login() {
           <input
             type="email"
             name="email"
-            autoComplete="email"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+            enterKeyHint="next"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
             required
@@ -56,6 +70,7 @@ export default function Login() {
             type="password"
             name="senha"
             autoComplete="current-password"
+            enterKeyHint="go"
             value={senha}
             onChange={(evento) => setSenha(evento.target.value)}
             required

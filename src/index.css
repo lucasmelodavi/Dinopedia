@@ -1429,7 +1429,7 @@ a {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 860px), (hover: none) {
   .botao-menu {
     display: flex;
     touch-action: manipulation;
@@ -1592,5 +1592,32 @@ a {
 
   .perfil-identidade {
     flex-direction: column;
+  }
+
+  .campo input,
+  .campo select,
+  .campo textarea {
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  .pagina-auth h1 {
+    font-size: 1.7rem;
+  }
+
+  .pagina-auth .formulario {
+    max-width: none;
+    width: 100%;
+    margin-top: 18px;
+  }
+
+  .pagina-auth .botao {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .conteudo:not(.conteudo--home) {
+    width: calc(100% - 24px);
+    padding: 20px 0 56px;
   }
 }

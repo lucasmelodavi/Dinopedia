@@ -2,16 +2,26 @@ const API_URL = import.meta.env.DEV
   ? import.meta.env.VITE_API_URL || 'http://localhost:3000'
   : ''
 const TOKEN_KEY = 'dinopedia_token'
+let tokenMemoria = null
 
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY)
+  try {
+    return localStorage.getItem(TOKEN_KEY) || tokenMemoria
+  } catch {
+    return tokenMemoria
+  }
 }
 
 export function setToken(token) {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token)
-  } else {
-    localStorage.removeItem(TOKEN_KEY)
+  tokenMemoria = token || null
+  try {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token)
+    } else {
+      localStorage.removeItem(TOKEN_KEY)
+    }
+  } catch {
+    /* Safari privado: a sessão fica só nesta aba */
   }
 }
 

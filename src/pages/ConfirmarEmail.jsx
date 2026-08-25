@@ -41,8 +41,11 @@ export default function ConfirmarEmail() {
   async function handleSubmit(evento) {
     evento.preventDefault()
     setErro('')
+    const form = new FormData(evento.currentTarget)
+    const emailInformado = String(form.get('email') || email).trim()
+    const codigoInformado = String(form.get('codigo') || codigo).replace(/\D/g, '').slice(0, 6)
 
-    if (!email.trim() || codigoLimpo.length !== 6) {
+    if (!emailInformado || codigoInformado.length !== 6) {
       setErro('Preencha o e-mail e o código de 6 dígitos.')
       return
     }
@@ -50,8 +53,8 @@ export default function ConfirmarEmail() {
     setEnviando(true)
     try {
       const dados = await confirmarEmail({
-        email: email.trim(),
-        codigo: codigoLimpo,
+        email: emailInformado,
+        codigo: codigoInformado,
       })
       entrarComSessao({ token: dados.token, usuario: dados.usuario })
       navigate('/', { replace: true })
@@ -94,7 +97,7 @@ export default function ConfirmarEmail() {
   }
 
   return (
-    <section className="pagina">
+    <section className="pagina pagina-auth">
       <h1>Olá, {primeiroNome}</h1>
       <p>
         O código vai para o e-mail da conta que você criou
@@ -132,7 +135,11 @@ export default function ConfirmarEmail() {
           <input
             type="email"
             name="email"
-            autoComplete="email"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
             placeholder="seuemail@gmail.com"

@@ -13,12 +13,26 @@ export default function Registrar() {
   async function handleSubmit(evento) {
     evento.preventDefault()
     setErro('')
+    const form = new FormData(evento.currentTarget)
+    const nomeInformado = String(form.get('nome') || nome).trim()
+    const emailInformado = String(form.get('email') || email).trim()
+    const senhaInformada = String(form.get('senha') || senha)
+
+    if (!nomeInformado || !emailInformado || !senhaInformada) {
+      setErro('Preencha nome, e-mail e senha.')
+      return
+    }
+
     setEnviando(true)
 
     try {
-      const dados = await registrar({ nome: nome.trim(), email: email.trim(), senha })
-      const emailCriado = dados.email || email.trim()
-      const nomeCriado = dados.nome || nome.trim()
+      const dados = await registrar({
+        nome: nomeInformado,
+        email: emailInformado,
+        senha: senhaInformada,
+      })
+      const emailCriado = dados.email || emailInformado
+      const nomeCriado = dados.nome || nomeInformado
       navigate(`/confirmar?email=${encodeURIComponent(emailCriado)}`, {
         state: {
           email: emailCriado,
@@ -37,7 +51,7 @@ export default function Registrar() {
   }
 
   return (
-    <section className="pagina">
+    <section className="pagina pagina-auth">
       <h1>Criar conta</h1>
       <p>
         A pessoa coloca o e-mail dela. Se o Gmail não chegar, o código aparece
@@ -64,7 +78,11 @@ export default function Registrar() {
           <input
             type="email"
             name="email"
-            autoComplete="email"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
             placeholder="ex: maria@gmail.com"

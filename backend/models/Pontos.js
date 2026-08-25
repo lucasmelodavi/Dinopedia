@@ -270,16 +270,24 @@ class Pontos {
     }
 
     static async sincronizarUsuario(usuarioId) {
-        await Pontos.sincronizar();
-
         const id = parseInt(usuarioId, 10);
         if (!id) return;
 
         try {
+            await Pontos.garantirEstrutura();
             const User = require('./User');
             const usuario = await User.buscarPorId(id);
             await Pontos.completarPerfil(usuario);
-            await Pontos.recalcularTodos();
+            await pool.query(
+                `UPDATE usuarios
+                 SET pontos = COALESCE((
+                     SELECT SUM(pontos_eventos.pontos)::int
+                     FROM pontos_eventos
+                     WHERE pontos_eventos.usuario_id = $1
+                 ), 0)
+                 WHERE id = $1`,
+                [id]
+            );
         } catch (erro) {
             console.error('Falha ao sincronizar pontos do usuário', id, erro.message);
         }
