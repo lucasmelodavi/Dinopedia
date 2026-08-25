@@ -48,6 +48,16 @@ export default function DinossauroDetalhe() {
           {dino.familia ? <p>Família: {dino.familia}</p> : null}
           {dino.comprimento ? <p>Comprimento: {dino.comprimento} m</p> : null}
           {dino.regiao ? <p>Região: {dino.regiao}</p> : null}
+          {dino.autorNome ? (
+            <p className="dino-autor">
+              Feito por{' '}
+              {dino.usuarioId ? (
+                <Link to={`/usuarios/${dino.usuarioId}`}>{dino.autorNome}</Link>
+              ) : (
+                dino.autorNome
+              )}
+            </p>
+          ) : null}
           <p>{dino.descricao}</p>
           {autenticado ? (
             <Link to={`/dinossauros/${dino.id}/editar`} className="botao botao-fantasma">

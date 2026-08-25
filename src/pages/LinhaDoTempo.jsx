@@ -46,6 +46,16 @@ export default function LinhaDoTempo() {
                   <Link to={`/dinossauros/${dino.id}`}>{dino.nome}</Link>
                   {' — '}
                   {dino.dieta}
+                  {dino.autorNome ? (
+                    <>
+                      {' — feito por '}
+                      {dino.usuarioId ? (
+                        <Link to={`/usuarios/${dino.usuarioId}`}>{dino.autorNome}</Link>
+                      ) : (
+                        dino.autorNome
+                      )}
+                    </>
+                  ) : null}
                 </li>
               ))}
             </ul>

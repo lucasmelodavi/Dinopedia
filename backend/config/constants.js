@@ -13,6 +13,8 @@ const CATEGORIAS_TOPICO = [
 const FAMILIAS = [
     'Theropoda',
     'Spinosauridae',
+    'Abelisauridae',
+    'Herrerasauridae',
     'Sauropoda',
     'Titanosauria',
     'Ceratopsia',

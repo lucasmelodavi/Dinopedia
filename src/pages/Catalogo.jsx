@@ -156,6 +156,16 @@ export default function Catalogo() {
               <p className="cientifico">{dino.nomeCientifico}</p>
               <p>Período: {dino.periodo}</p>
               <p>Dieta: {dino.dieta}</p>
+              {dino.autorNome ? (
+                <p className="dino-autor">
+                  Feito por{' '}
+                  {dino.usuarioId ? (
+                    <Link to={`/usuarios/${dino.usuarioId}`}>{dino.autorNome}</Link>
+                  ) : (
+                    dino.autorNome
+                  )}
+                </p>
+              ) : null}
               <Link to={`/dinossauros/${dino.id}`} className="botao botao-fantasma">
                 Ver detalhes
               </Link>

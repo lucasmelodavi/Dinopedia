@@ -40,6 +40,7 @@ class Dinosaur {
             anoDescoberta: row.ano_descoberta,
             destaque: Boolean(row.destaque),
             usuarioId: row.criado_por,
+            autorNome: row.autor_nome || null,
             criadoEm: row.created_at,
             atualizadoEm: row.updated_at
         };
@@ -119,17 +120,15 @@ class Dinosaur {
             ]
         );
 
-        return Dinosaur.mapear({
-            ...resultado.rows[0],
-            periodo_nome: periodoRow.nome
-        });
+        return Dinosaur.buscarPorId(resultado.rows[0].id);
     }
 
     static async buscarPorId(id) {
         const resultado = await pool.query(
-            `SELECT d.*, p.nome AS periodo_nome
+            `SELECT d.*, p.nome AS periodo_nome, u.nome AS autor_nome
              FROM dinossauros d
              JOIN periodos p ON p.id = d.periodo_id
+             LEFT JOIN usuarios u ON u.id = d.criado_por
              WHERE d.id = $1`,
             [id]
         );
@@ -176,7 +175,7 @@ class Dinosaur {
             throw new Error('Nome, nome científico, dieta e descrição não podem ficar vazios');
         }
 
-        const resultado = await pool.query(
+        await pool.query(
             `UPDATE dinossauros SET
                 nome = $1,
                 nome_cientifico = $2,
@@ -208,10 +207,7 @@ class Dinosaur {
             ]
         );
 
-        const atualizado = Dinosaur.mapear({
-            ...resultado.rows[0],
-            periodo_nome: periodoNome
-        });
+        const atualizado = await Dinosaur.buscarPorId(id);
 
         return { anterior: atual, atualizado };
     }
@@ -282,9 +278,10 @@ class Dinosaur {
         valores.push(offset);
 
         const resultado = await pool.query(
-            `SELECT d.*, p.nome AS periodo_nome
+            `SELECT d.*, p.nome AS periodo_nome, u.nome AS autor_nome
              FROM dinossauros d
              JOIN periodos p ON p.id = d.periodo_id
+             LEFT JOIN usuarios u ON u.id = d.criado_por
              ${where}
              ORDER BY ${sortColumn} ${ordem}
              LIMIT $${valores.length - 1} OFFSET $${valores.length}`,

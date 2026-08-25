@@ -528,6 +528,17 @@ a {
   margin-bottom: 8px;
 }
 
+.dino-autor {
+  color: #c8d4c0;
+  font-size: 0.92rem;
+  margin: 8px 0 0;
+}
+
+.dino-autor a {
+  color: var(--green-2);
+  font-weight: 600;
+}
+
 .card-dino-corpo .botao {
   margin-top: 10px;
   width: 100%;
