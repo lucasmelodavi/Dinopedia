@@ -61,7 +61,11 @@ class User {
             criador: User.ehCriador(usuario.email),
             pontos: Number(usuario.pontos) || 0,
             nivel: resumir(usuario.pontos),
-            enfeites: Enfeite.filtrarEquipados(usuario.enfeites, usuario.pontos)
+            enfeites: Enfeite.filtrarEquipados(
+                usuario.enfeites,
+                usuario.pontos,
+                User.ehCriador(usuario.email)
+            )
         };
     }
 
@@ -208,9 +212,10 @@ class User {
         }
 
         const proximaFoto = foto !== undefined ? foto : atual.foto;
+        const ehCriador = User.ehCriador(atual.email);
         const proximosEnfeites = enfeites !== undefined
-            ? Enfeite.validarEscolha(enfeites, atual.pontos)
-            : Enfeite.filtrarEquipados(atual.enfeites, atual.pontos);
+            ? Enfeite.validarEscolha(enfeites, atual.pontos, ehCriador)
+            : Enfeite.filtrarEquipados(atual.enfeites, atual.pontos, ehCriador);
 
         const resultado = await pool.query(
             `UPDATE usuarios

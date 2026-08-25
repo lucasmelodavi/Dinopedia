@@ -50,7 +50,7 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         },
         seguindoEste,
         eEu,
-        ...(eEu ? { enfeitesCatalogo: Enfeite.listar(atual.pontos, atual.enfeites) } : {})
+        ...(eEu ? { enfeitesCatalogo: Enfeite.listar(atual.pontos, atual.enfeites, User.ehCriador(atual.email)) } : {})
     };
 }
 

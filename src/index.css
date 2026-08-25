@@ -850,6 +850,24 @@ a {
   bottom: -5px;
 }
 
+.broche-fundador {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 6px rgba(232, 176, 64, 0.95)) drop-shadow(0 1px 2px #000);
+}
+
+.cabecalho-perfil .broche-fundador {
+  font-size: 0.85rem;
+}
+
+.enfeite-opcao.enfeite-exclusivo {
+  border-color: rgba(232, 176, 64, 0.55);
+  background: linear-gradient(180deg, rgba(232, 176, 64, 0.14), #0e130e);
+}
+
+.enfeite-opcao.enfeite-exclusivo.is-ativo {
+  border-color: #e8b040;
+}
+
 .perfil-enfeites {
   margin-top: 18px;
 }
@@ -907,12 +925,23 @@ a {
   border-color: var(--green-2);
 }
 
+.perfil-avatar,
+.cartao-pessoa-foto,
+.lista-pessoa-foto,
+.cabecalho-avatar {
+  position: relative;
+}
+
 .perfil-avatar img,
 .cartao-pessoa-foto img,
-.lista-pessoa-foto img {
+.lista-pessoa-foto img,
+.cabecalho-avatar img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .perfil-nome {
@@ -1554,8 +1583,15 @@ a {
 .cabecalho-avatar {
   width: 22px;
   height: 22px;
+  flex: 0 0 22px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
   border-radius: 50%;
-  object-fit: cover;
+  background: linear-gradient(135deg, var(--green), #1d3b14);
+  color: #081208;
+  font-size: 0.55rem;
+  font-weight: 800;
 }
 
 .busca-amigos {

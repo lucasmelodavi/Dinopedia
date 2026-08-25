@@ -31,6 +31,31 @@ function formatarData(valor) {
   })
 }
 
+function detalheEnfeite(item) {
+  if (!item.desbloqueado) {
+    return item.soCriador ? 'Exclusivo do criador' : `Faltam ${item.faltam} pts`
+  }
+  if (item.equipado) return 'No perfil'
+  if (item.soCriador) return 'Só você'
+  return `${item.min} pts`
+}
+
+function tituloEnfeite(item) {
+  if (item.desbloqueado || item.soCriador) return item.descricao
+  return `Desbloqueia com ${item.min} pontos`
+}
+
+function classeEnfeite(item) {
+  return [
+    'enfeite-opcao',
+    item.equipado ? 'is-ativo' : '',
+    item.desbloqueado ? '' : 'is-bloqueado',
+    item.soCriador ? 'enfeite-exclusivo' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
 function tempoRelativo(valor) {
   if (!valor) return ''
   const diff = Date.now() - new Date(valor).getTime()
@@ -608,6 +633,9 @@ export default function Perfil() {
             <h3>Enfeites do perfil</h3>
             <p className="perfil-cartao-legenda">
               Os pontos desbloqueiam molduras e broches. Toque para colocar ou tirar. Uma moldura e um broche por vez.
+              {(perfil?.enfeitesCatalogo || []).some((item) => item.soCriador)
+                ? ' O selo do criador só aparece nesta conta.'
+                : ''}
             </p>
             <p className="bloco-curiosidades-ajuda">Molduras</p>
             <div className="grade-enfeites">
@@ -617,20 +645,14 @@ export default function Perfil() {
                   <button
                     key={item.id}
                     type="button"
-                    className={`enfeite-opcao ${item.equipado ? 'is-ativo' : ''} ${item.desbloqueado ? '' : 'is-bloqueado'}`}
+                    className={classeEnfeite(item)}
                     onClick={() => handleEnfeite(item)}
                     disabled={!item.desbloqueado || salvandoEnfeite}
-                    title={item.desbloqueado ? item.descricao : `Desbloqueia com ${item.min} pontos`}
+                    title={tituloEnfeite(item)}
                   >
                     <span aria-hidden="true">{item.simbolo}</span>
                     <strong>{item.nome}</strong>
-                    <small>
-                      {item.desbloqueado
-                        ? item.equipado
-                          ? 'No perfil'
-                          : `${item.min} pts`
-                        : `Faltam ${item.faltam} pts`}
-                    </small>
+                    <small>{detalheEnfeite(item)}</small>
                   </button>
                 ))}
             </div>
@@ -642,20 +664,14 @@ export default function Perfil() {
                   <button
                     key={item.id}
                     type="button"
-                    className={`enfeite-opcao ${item.equipado ? 'is-ativo' : ''} ${item.desbloqueado ? '' : 'is-bloqueado'}`}
+                    className={classeEnfeite(item)}
                     onClick={() => handleEnfeite(item)}
                     disabled={!item.desbloqueado || salvandoEnfeite}
-                    title={item.desbloqueado ? item.descricao : `Desbloqueia com ${item.min} pontos`}
+                    title={tituloEnfeite(item)}
                   >
                     <span aria-hidden="true">{item.simbolo}</span>
                     <strong>{item.nome}</strong>
-                    <small>
-                      {item.desbloqueado
-                        ? item.equipado
-                          ? 'No perfil'
-                          : `${item.min} pts`
-                        : `Faltam ${item.faltam} pts`}
-                    </small>
+                    <small>{detalheEnfeite(item)}</small>
                   </button>
                 ))}
             </div>

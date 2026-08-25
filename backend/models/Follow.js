@@ -7,6 +7,7 @@ class Follow {
             id: row.id,
             nome: row.nome,
             foto: row.foto || null,
+            email: row.email,
             pontos: Number(row.pontos) || 0,
             enfeites: row.enfeites
         });
@@ -78,7 +79,7 @@ class Follow {
 
     static async listarSeguidores(usuarioId) {
         const resultado = await pool.query(
-            `SELECT u.id, u.nome, u.foto, u.pontos, u.enfeites
+            `SELECT u.id, u.nome, u.foto, u.email, u.pontos, u.enfeites
              FROM seguidores s
              JOIN usuarios u ON u.id = s.seguidor_id
              WHERE s.seguido_id = $1 AND u.confirmado = TRUE
@@ -91,7 +92,7 @@ class Follow {
 
     static async listarSeguindo(usuarioId) {
         const resultado = await pool.query(
-            `SELECT u.id, u.nome, u.foto, u.pontos, u.enfeites
+            `SELECT u.id, u.nome, u.foto, u.email, u.pontos, u.enfeites
              FROM seguidores s
              JOIN usuarios u ON u.id = s.seguido_id
              WHERE s.seguidor_id = $1 AND u.confirmado = TRUE
