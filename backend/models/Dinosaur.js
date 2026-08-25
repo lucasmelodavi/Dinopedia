@@ -76,6 +76,38 @@ class Dinosaur {
         return familia;
     }
 
+    static chaveNome(valor) {
+        return semAcento(String(valor || '').replace(/\s+/g, ' '));
+    }
+
+    static async garantirUnico({ nome, nomeCientifico, ignorarId } = {}) {
+        const nomeChave = Dinosaur.chaveNome(nome);
+        const cientificoChave = Dinosaur.chaveNome(nomeCientifico);
+
+        if (!nomeChave && !cientificoChave) return;
+
+        const resultado = await pool.query(
+            'SELECT id, nome, nome_cientifico FROM dinossauros'
+        );
+
+        const repetido = resultado.rows.find((row) => {
+            if (ignorarId && Number(row.id) === Number(ignorarId)) return false;
+            const mesmoNome = nomeChave && Dinosaur.chaveNome(row.nome) === nomeChave;
+            const mesmoCientifico =
+                cientificoChave && Dinosaur.chaveNome(row.nome_cientifico) === cientificoChave;
+            return mesmoNome || mesmoCientifico;
+        });
+
+        if (!repetido) return;
+
+        const peloNome = nomeChave && Dinosaur.chaveNome(repetido.nome) === nomeChave;
+        throw new Error(
+            peloNome
+                ? `Este dinossauro já está na DinoPédia: ${repetido.nome}. Abra a ficha para editar.`
+                : `Já existe um dinossauro com o nome científico ${repetido.nome_cientifico}. Abra a ficha para editar.`
+        );
+    }
+
     static async criar({
         nome,
         nomeCientifico,
@@ -98,6 +130,7 @@ class Dinosaur {
         const dietaNormalizada = Dinosaur.validarDieta(dieta);
         const familiaNormalizada = Dinosaur.validarFamilia(familia);
         const periodoRow = await Dinosaur.buscarPeriodoId(periodo);
+        await Dinosaur.garantirUnico({ nome, nomeCientifico });
 
         const resultado = await pool.query(
             `INSERT INTO dinossauros (
@@ -174,6 +207,12 @@ class Dinosaur {
         if (!proximo.nome || !proximo.nomeCientifico || !proximo.dieta || !proximo.descricao) {
             throw new Error('Nome, nome científico, dieta e descrição não podem ficar vazios');
         }
+
+        await Dinosaur.garantirUnico({
+            nome: proximo.nome,
+            nomeCientifico: proximo.nomeCientifico,
+            ignorarId: id
+        });
 
         await pool.query(
             `UPDATE dinossauros SET
