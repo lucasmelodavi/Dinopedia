@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { registrar } from '../services/authService'
 
 export default function Registrar() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
   const [nome, setNome] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(searchParams.get('email') || '')
   const [senha, setSenha] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
+  const [aviso] = useState(location.state?.aviso || '')
 
   async function handleSubmit(evento) {
     evento.preventDefault()
@@ -59,6 +62,7 @@ export default function Registrar() {
       </p>
 
       <form className="formulario cartao" onSubmit={handleSubmit}>
+        {aviso ? <p className="aviso">{aviso}</p> : null}
         {erro ? <p className="alerta">{erro}</p> : null}
 
         <label className="campo">

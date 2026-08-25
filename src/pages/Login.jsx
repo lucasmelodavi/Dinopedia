@@ -34,7 +34,10 @@ export default function Login() {
         return
       }
       if (falha.status === 404) {
-        setErro('Não achamos uma conta com esse e-mail. Crie uma no cadastro.')
+        navigate(`/registrar?email=${encodeURIComponent(emailInformado)}`, {
+          replace: true,
+          state: { aviso: 'Essa conta ainda não existe. Crie ela aqui para depois entrar.' },
+        })
         return
       }
       setErro(falha.message || 'Não foi possível entrar.')
@@ -49,17 +52,7 @@ export default function Login() {
       <p>Entre com o e-mail da sua conta, o que for: Gmail, Outlook ou outro.</p>
 
       <form className="formulario cartao" onSubmit={handleSubmit}>
-        {erro ? (
-          <p className="alerta">
-            {erro}
-            {erro.includes('cadastro') ? (
-              <>
-                {' '}
-                <Link to="/registrar">Ir para o cadastro</Link>
-              </>
-            ) : null}
-          </p>
-        ) : null}
+        {erro ? <p className="alerta">{erro}</p> : null}
 
         <label className="campo">
           E-mail

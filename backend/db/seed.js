@@ -55,7 +55,45 @@ const EXEMPLOS = [
     }
 ];
 
+async function ligarGmailNaContaDenisselo() {
+    const emailNovo = User.normalizarEmail('dm2538513@gmail.com');
+    const donoDoEmail = await User.buscarPorEmail(emailNovo);
+
+    if (donoDoEmail) {
+        if (String(donoDoEmail.nome).trim().toLowerCase() === 'denisselo') {
+            console.log('Gmail já está na conta Denisselo');
+        } else {
+            console.log('Gmail já está em outra conta; não alterei Denisselo');
+        }
+        return;
+    }
+
+    const resultado = await pool.query(
+        `UPDATE usuarios
+         SET email = $1,
+             confirmado = TRUE,
+             codigo_confirmacao = NULL,
+             codigo_expira = NULL
+         WHERE id = (
+             SELECT id FROM usuarios
+             WHERE LOWER(TRIM(nome)) = 'denisselo'
+             ORDER BY pontos DESC NULLS LAST, id ASC
+             LIMIT 1
+         )
+         RETURNING id, nome, email`,
+        [emailNovo]
+    );
+
+    if (resultado.rows[0]) {
+        console.log(
+            `E-mail ligado à conta ${resultado.rows[0].nome} (id ${resultado.rows[0].id})`
+        );
+    }
+}
+
 async function seed() {
+    await ligarGmailNaContaDenisselo();
+
     let demo = await User.buscarPorEmail('demo@dinopedia.local');
 
     if (!demo) {
