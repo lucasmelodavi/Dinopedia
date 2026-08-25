@@ -8,6 +8,12 @@ const CURIOSIDADES = [
   'Alguns saurópodes podiam chegar a mais de 30 metros.',
 ]
 
+function destinoDoLink(to) {
+  if (typeof to !== 'string' || !to.includes('#')) return to
+  const [pathname, hash] = to.split('#')
+  return { pathname, hash: `#${hash}` }
+}
+
 function Icone({ nome }) {
   if (nome === 'casa') {
     return (
@@ -240,26 +246,30 @@ export default function IndiceLateral({ aberto, onMudar }) {
           </div>
           <nav>
             {principais.map((link) => (
-              <NavLink key={link.to} to={link.to} end={link.fim} className={classeLink(link)} onClick={fechar}>
+              <NavLink key={link.to} to={destinoDoLink(link.to)} end={link.fim} className={classeLink(link)} onClick={fechar}>
                 <Icone nome={link.icon} />
                 {link.label}
               </NavLink>
             ))}
             {conta.map((link) => (
-              <NavLink key={`${link.to}-${link.label}`} to={link.to} className={classeLink(link)} onClick={fechar}>
+              <NavLink key={`${link.to}-${link.label}`} to={destinoDoLink(link.to)} className={classeLink(link)} onClick={fechar}>
                 <Icone nome={link.icon} />
                 {link.label}
               </NavLink>
             ))}
             <span className="indice-separador" />
             {autenticado ? (
-              <NavLink to="/perfil#configuracoes" className={classeLink({ ativo: false })} onClick={fechar}>
+              <NavLink
+                to={destinoDoLink('/perfil#configuracoes')}
+                className={classeLink({ ativo: false })}
+                onClick={fechar}
+              >
                 <Icone nome="engrenagem" />
                 Configurações
               </NavLink>
             ) : null}
             {extra.map((link) => (
-              <NavLink key={link.to} to={link.to} className={classeLink(link)} onClick={fechar}>
+              <NavLink key={link.to} to={destinoDoLink(link.to)} className={classeLink(link)} onClick={fechar}>
                 <Icone nome={link.icon} />
                 {link.label}
               </NavLink>

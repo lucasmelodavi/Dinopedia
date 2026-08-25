@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Follow = require('../models/Follow');
 const Edicao = require('../models/Edicao');
 const Pontos = require('../models/Pontos');
+const Topico = require('../models/Topico');
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     await Pontos.sincronizar();
@@ -9,12 +10,13 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     let atual = (await User.buscarPorId(usuario.id)) || usuario;
     await Pontos.completarPerfil(atual);
     atual = (await User.buscarPorId(usuario.id)) || atual;
-    const [edicoes, contagem, seguidores, seguindo, historicoPontos] = await Promise.all([
+    const [edicoes, contagem, seguidores, seguindo, historicoPontos, topicos] = await Promise.all([
         Edicao.listarPorUsuario(atual.id),
         Follow.contar(atual.id),
         Follow.listarSeguidores(atual.id),
         Follow.listarSeguindo(atual.id),
-        Pontos.listarPorUsuario(atual.id)
+        Pontos.listarPorUsuario(atual.id),
+        Topico.listarPorUsuario(atual.id)
     ]);
 
     const visivel = comEmail ? User.publico(atual) : User.visivel(atual);
@@ -25,11 +27,13 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     return {
         ...visivel,
         edicoes,
+        topicos,
         seguidores,
         seguindo,
         historicoPontos,
         estatisticas: {
             edicoes: edicoes.length,
+            topicos: topicos.length,
             seguidores: contagem.seguidores,
             seguindo: contagem.seguindo,
             pontos: visivel.pontos

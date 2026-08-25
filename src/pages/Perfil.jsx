@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import { ehContaCriador } from '../constants'
 import { useAuth } from '../context/AuthContext'
@@ -131,9 +131,10 @@ function GraficoAtividade({ meses }) {
 
 export default function Perfil() {
   const { id } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const { autenticado, carregando, usuario, atualizarUsuario } = useAuth()
-  const meuPerfil = !id || String(usuario?.id) === String(id)
+  const meuPerfil = !id
   const [perfil, setPerfil] = useState(null)
   const [dinossauros, setDinossauros] = useState([])
   const [historicoAberto, setHistoricoAberto] = useState(false)
@@ -170,15 +171,22 @@ export default function Perfil() {
 
         if (!ativo) return
 
-        const meus = (lista.data || []).filter((dino) => dino.usuarioId === dados.id)
+        const meus = (lista.data || []).filter(
+          (dino) => String(dino.usuarioId) === String(dados.id),
+        )
         setPerfil(dados)
         setTextoBio(dados.descricao || '')
         setDinossauros(meus)
-        atualizarUsuario(dados)
+        if (!id || String(usuario?.id) === String(dados.id)) {
+          atualizarUsuario(dados)
+        }
       } catch (falha) {
         if (ativo) {
-          const texto = falha.message || 'Não foi possível carregar o perfil.'
-          if (!/404/.test(texto)) setErro(texto)
+          setErro(
+            falha.status === 404
+              ? 'Este perfil não existe ou ainda não foi confirmado.'
+              : falha.message || 'Não foi possível carregar o perfil.',
+          )
         }
       } finally {
         if (ativo) setBuscando(false)
@@ -191,7 +199,27 @@ export default function Perfil() {
     }
   }, [autenticado, carregando, id])
 
+  useEffect(() => {
+    if (buscando || !perfil || !location.hash) return undefined
+
+    const alvo = document.getElementById(location.hash.replace('#', ''))
+    if (!alvo) return undefined
+
+    const ir = window.setTimeout(() => {
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      alvo.classList.add('is-alvo')
+    }, 80)
+    const limpar = window.setTimeout(() => alvo.classList.remove('is-alvo'), 1800)
+
+    return () => {
+      window.clearTimeout(ir)
+      window.clearTimeout(limpar)
+      alvo.classList.remove('is-alvo')
+    }
+  }, [buscando, perfil, location.hash, location.pathname])
+
   const edicoes = perfil?.edicoes || []
+  const topicos = perfil?.topicos || []
   const meses = useMemo(() => mesesAtividade(edicoes), [edicoes])
   const edicoesVisiveis = historicoAberto ? edicoes : edicoes.slice(0, 5)
   const seguidores = perfil?.seguidores || []
@@ -204,7 +232,9 @@ export default function Perfil() {
     if (dados.descricao !== undefined) {
       setTextoBio(dados.descricao || '')
     }
-    atualizarUsuario(dados)
+    if (!id || String(usuario?.id) === String(dados.id)) {
+      atualizarUsuario(dados)
+    }
   }
 
   async function handleDescricao(evento) {
@@ -273,7 +303,7 @@ export default function Perfil() {
   }
 
   if (id && usuario && String(usuario.id) === String(id)) {
-    return <Navigate to="/perfil" replace />
+    return <Navigate to={{ pathname: '/perfil', hash: location.hash }} replace />
   }
 
   if (carregando && !id) {
@@ -307,7 +337,7 @@ export default function Perfil() {
 
   return (
     <section className="pagina pagina-perfil">
-      <article className="perfil-cartao perfil-resumo" id="configuracoes">
+      <article className="perfil-cartao perfil-resumo">
         <div className="perfil-identidade">
           <Avatar usuario={perfil} />
           <div>
@@ -317,51 +347,15 @@ export default function Perfil() {
               {perfil?.criador ? <span className="perfil-badge perfil-badge-criador">Criador</span> : null}
             </div>
             {meuPerfil && perfil?.email ? <p className="perfil-meta">{perfil.email}</p> : null}
-            {meuPerfil ? (
-              <form className="perfil-bio-form" onSubmit={handleDescricao}>
-                <label className="campo">
-                  Descrição do perfil
-                  <textarea
-                    rows="3"
-                    maxLength={400}
-                    value={textoBio}
-                    onChange={(evento) => {
-                      setTextoBio(evento.target.value)
-                      setOkBio('')
-                    }}
-                    placeholder="Conte um pouco sobre você, seus dinos favoritos ou o que você pesquisa."
-                  />
-                </label>
-                <p className="bloco-curiosidades-ajuda">
-                  Foto ou avatar vale +10 pontos. Descrição vale +10 pontos.
-                </p>
-                <div className="perfil-bio-acoes">
-                  <small>{textoBio.length}/400</small>
-                  <button className="botao" type="submit" disabled={salvandoBio}>
-                    {salvandoBio ? 'Salvando...' : 'Salvar descrição'}
-                  </button>
-                </div>
-                {okBio ? <p className="ok">{okBio}</p> : null}
-              </form>
-            ) : (
+            {!meuPerfil ? (
               <p className="perfil-bio">
                 {perfil?.descricao?.trim()
                   ? perfil.descricao
                   : 'Este colaborador ainda não escreveu uma descrição.'}
               </p>
-            )}
+            ) : null}
             <div className="perfil-foto-acoes">
-              {meuPerfil ? (
-                <label className="botao botao-fantasma perfil-upload">
-                  {salvandoFoto ? 'Salvando...' : 'Enviar minha foto'}
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/gif"
-                    onChange={handleFotoArquivo}
-                    disabled={salvandoFoto}
-                  />
-                </label>
-              ) : (
+              {!meuPerfil ? (
                 <button
                   type="button"
                   className={perfil.seguindoEste ? 'botao botao-fantasma' : 'botao'}
@@ -370,7 +364,7 @@ export default function Perfil() {
                 >
                   {seguindoAcao ? 'Salvando...' : perfil.seguindoEste ? 'Deixar de seguir' : 'Seguir'}
                 </button>
-              )}
+              ) : null}
               <Link to="/amigos" className="botao botao-fantasma">
                 Ver amigos
               </Link>
@@ -391,7 +385,7 @@ export default function Perfil() {
           </div>
         </div>
 
-        <ul className="perfil-stats" id="meus-topicos">
+        <ul className="perfil-stats">
           <li>
             <strong>{perfil?.pontos || 0}</strong>
             <span>
@@ -406,6 +400,10 @@ export default function Perfil() {
             <span>Edições realizadas</span>
           </li>
           <li>
+            <strong>{topicos.length}</strong>
+            <span>Tópicos criados</span>
+          </li>
+          <li>
             <strong>{dinossauros.length}</strong>
             <span>Dinossauros cadastrados</span>
           </li>
@@ -418,6 +416,82 @@ export default function Perfil() {
             <span>Seguindo</span>
           </li>
         </ul>
+      </article>
+
+      {meuPerfil ? (
+        <article className="perfil-cartao" id="configuracoes">
+          <div className="perfil-cartao-topo">
+            <h2>Configurações</h2>
+          </div>
+          <form className="perfil-bio-form" onSubmit={handleDescricao}>
+            <label className="campo">
+              Descrição do perfil
+              <textarea
+                rows="3"
+                maxLength={400}
+                value={textoBio}
+                onChange={(evento) => {
+                  setTextoBio(evento.target.value)
+                  setOkBio('')
+                }}
+                placeholder="Conte um pouco sobre você, seus dinos favoritos ou o que você pesquisa."
+              />
+            </label>
+            <p className="bloco-curiosidades-ajuda">
+              Foto ou avatar vale +10 pontos. Descrição vale +10 pontos.
+            </p>
+            <div className="perfil-bio-acoes">
+              <small>{textoBio.length}/400</small>
+              <button className="botao" type="submit" disabled={salvandoBio}>
+                {salvandoBio ? 'Salvando...' : 'Salvar descrição'}
+              </button>
+            </div>
+            {okBio ? <p className="ok">{okBio}</p> : null}
+          </form>
+          <div className="perfil-foto-acoes">
+            <label className="botao botao-fantasma perfil-upload">
+              {salvandoFoto ? 'Salvando...' : 'Enviar minha foto'}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/gif"
+                onChange={handleFotoArquivo}
+                disabled={salvandoFoto}
+              />
+            </label>
+          </div>
+        </article>
+      ) : null}
+
+      <article className="perfil-cartao" id="meus-topicos">
+        <div className="perfil-cartao-topo">
+          <h2>{meuPerfil ? 'Meus tópicos' : 'Tópicos'}</h2>
+          <span>{topicos.length}</span>
+        </div>
+        {topicos.length === 0 ? (
+          <p>
+            {meuPerfil
+              ? 'Você ainda não escreveu nenhum tópico. Abra uma ficha e adicione uma curiosidade.'
+              : 'Ainda não há tópicos neste perfil.'}
+          </p>
+        ) : (
+          <ul className="perfil-edicoes">
+            {topicos.map((topico) => (
+              <li key={topico.id}>
+                <Link to={`/dinossauros/${topico.dinossauroId}`}>{topico.dinossauroNome}</Link>
+                <p>
+                  {topico.categoria}
+                  {topico.texto ? `: ${String(topico.texto).slice(0, 90)}` : ''}
+                </p>
+                <small>{tempoRelativo(topico.criadoEm || topico.atualizadoEm)}</small>
+              </li>
+            ))}
+          </ul>
+        )}
+        {meuPerfil ? (
+          <Link to="/dinossauros" className="botao botao-fantasma">
+            Escrever tópico numa ficha
+          </Link>
+        ) : null}
       </article>
 
       <div className="perfil-grade">

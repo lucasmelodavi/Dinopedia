@@ -68,7 +68,7 @@ export default function DinossauroDetalhe() {
       </article>
 
       {(dino.topicos || []).length > 0 ? (
-        <div className="grade" style={{ marginTop: 28 }}>
+        <div className="grade" id="topicos" style={{ marginTop: 28 }}>
           {dino.topicos.map((topico) => (
             <article key={topico.id} className="cartao">
               <h2>{topico.categoria}</h2>

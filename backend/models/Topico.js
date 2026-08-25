@@ -59,6 +59,22 @@ class Topico {
         return resultado.rows.map(Topico.mapear);
     }
 
+    static async listarPorUsuario(usuarioId) {
+        const resultado = await pool.query(
+            `SELECT t.*, d.nome AS dinossauro_nome
+             FROM topicos t
+             JOIN dinossauros d ON d.id = t.dinossauro_id
+             WHERE t.usuario_id = $1
+             ORDER BY t.created_at DESC`,
+            [usuarioId]
+        );
+
+        return resultado.rows.map((row) => ({
+            ...Topico.mapear(row),
+            dinossauroNome: row.dinossauro_nome
+        }));
+    }
+
     static async buscarPorId(id) {
         const resultado = await pool.query(
             'SELECT * FROM topicos WHERE id = $1',
