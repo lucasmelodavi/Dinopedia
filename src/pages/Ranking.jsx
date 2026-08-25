@@ -5,10 +5,20 @@ import { REGRAS_PONTOS } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { listarRanking } from '../services/userService'
 
+const NIVEIS_PADRAO = [
+  { nome: 'Recruta', min: 0 },
+  { nome: 'Explorador', min: 50 },
+  { nome: 'Paleontólogo', min: 150 },
+  { nome: 'Curador', min: 400 },
+  { nome: 'Lenda do Mesozoico', min: 1000 },
+  { nome: 'Lendário', min: 5000 },
+]
+
 export default function Ranking() {
   const { usuario } = useAuth()
   const [lista, setLista] = useState([])
   const [regras, setRegras] = useState(REGRAS_PONTOS)
+  const [niveis, setNiveis] = useState(NIVEIS_PADRAO)
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(true)
 
@@ -18,6 +28,9 @@ export default function Ranking() {
         setLista(dados.data || [])
         if (Array.isArray(dados.regras) && dados.regras.length) {
           setRegras(dados.regras)
+        }
+        if (Array.isArray(dados.niveis) && dados.niveis.length) {
+          setNiveis(dados.niveis)
         }
       })
       .catch((falha) => setErro(falha.message || 'Não foi possível abrir o ranking.'))
@@ -43,6 +56,23 @@ export default function Ranking() {
             <li key={regra.tipo || regra.label}>
               <strong>+{regra.pontos}</strong>
               <span>{regra.label}</span>
+            </li>
+          ))}
+        </ul>
+      </article>
+
+      <article className="perfil-cartao">
+        <div className="perfil-cartao-topo">
+          <h2>Níveis</h2>
+        </div>
+        <p className="perfil-cartao-legenda">
+          Dá para passar de 5.000 pontos; o nível máximo continua sendo Lendário.
+        </p>
+        <ul className="lista-regras-pontos">
+          {niveis.map((nivel) => (
+            <li key={nivel.nome}>
+              <strong>{nivel.min}+</strong>
+              <span>{nivel.nome}</span>
             </li>
           ))}
         </ul>

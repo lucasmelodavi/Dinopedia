@@ -13,7 +13,8 @@ const NIVEIS = [
     { nome: 'Explorador', min: 50 },
     { nome: 'Paleontólogo', min: 150 },
     { nome: 'Curador', min: 400 },
-    { nome: 'Lenda do Mesozoico', min: 800 }
+    { nome: 'Lenda do Mesozoico', min: 1000 },
+    { nome: 'Lendário', min: 5000 }
 ];
 
 function resumir(total) {
