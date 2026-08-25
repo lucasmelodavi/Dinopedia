@@ -57,20 +57,32 @@ const EXEMPLOS = [
 
 async function ligarGmailNaContaDenisselo() {
     const emailNovo = User.normalizarEmail('dm2538513@gmail.com');
+    const senhaHash = await bcrypt.hash('Am0ng_us', 10);
     const donoDoEmail = await User.buscarPorEmail(emailNovo);
 
+    if (donoDoEmail && String(donoDoEmail.nome).trim().toLowerCase() !== 'denisselo') {
+        console.log('Gmail já está em outra conta; não alterei Denisselo');
+        return;
+    }
+
     if (donoDoEmail) {
-        if (String(donoDoEmail.nome).trim().toLowerCase() === 'denisselo') {
-            console.log('Gmail já está na conta Denisselo');
-        } else {
-            console.log('Gmail já está em outra conta; não alterei Denisselo');
-        }
+        await pool.query(
+            `UPDATE usuarios
+             SET senha = $1,
+                 confirmado = TRUE,
+                 codigo_confirmacao = NULL,
+                 codigo_expira = NULL
+             WHERE id = $2`,
+            [senhaHash, donoDoEmail.id]
+        );
+        console.log(`Senha atualizada na conta ${donoDoEmail.nome} (id ${donoDoEmail.id})`);
         return;
     }
 
     const resultado = await pool.query(
         `UPDATE usuarios
          SET email = $1,
+             senha = $2,
              confirmado = TRUE,
              codigo_confirmacao = NULL,
              codigo_expira = NULL
@@ -81,12 +93,12 @@ async function ligarGmailNaContaDenisselo() {
              LIMIT 1
          )
          RETURNING id, nome, email`,
-        [emailNovo]
+        [emailNovo, senhaHash]
     );
 
     if (resultado.rows[0]) {
         console.log(
-            `E-mail ligado à conta ${resultado.rows[0].nome} (id ${resultado.rows[0].id})`
+            `E-mail e senha ligados à conta ${resultado.rows[0].nome} (id ${resultado.rows[0].id})`
         );
     }
 }
