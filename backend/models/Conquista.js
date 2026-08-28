@@ -16,13 +16,14 @@ class Conquista {
                 fotosDino: 0,
                 fotoPerfil: false,
                 descricaoPerfil: false,
-                seguindo: 0
+                seguindo: 0,
+                favorito: false
             };
         }
 
         const [usuario, dinos, edicoes, topicos, fotos, follows] = await Promise.all([
             pool.query(
-                `SELECT confirmado, pontos, foto, descricao
+                `SELECT confirmado, pontos, foto, descricao, favorito_id
                  FROM usuarios
                  WHERE id = $1`,
                 [id]
@@ -69,7 +70,8 @@ class Conquista {
             fotosDino: fotos.rows[0].total,
             fotoPerfil: Boolean(String(row.foto || '').trim()),
             descricaoPerfil: Boolean(String(row.descricao || '').trim()),
-            seguindo: follows.rows[0].total
+            seguindo: follows.rows[0].total,
+            favorito: Boolean(row.favorito_id)
         };
     }
 

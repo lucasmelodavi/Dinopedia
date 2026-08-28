@@ -87,6 +87,14 @@ export const CONQUISTAS = [
     meta: 1,
     progresso: (stats) => stats.seguindo,
   },
+  {
+    id: 'dinossauro_favorito',
+    nome: 'Dinossauro favorito',
+    descricao: 'Escolheu um dinossauro favorito',
+    simbolo: '❤️',
+    meta: 1,
+    progresso: (stats) => (stats.favorito ? 1 : 0),
+  },
 ]
 
 export function catalogoConquistas() {
@@ -142,5 +150,6 @@ export function conquistasDoPerfil(perfil, dinossauros = []) {
     fotoPerfil: Boolean(String(perfil?.foto || '').trim()),
     descricaoPerfil: Boolean(String(perfil?.descricao || '').trim()),
     seguindo: perfil?.estatisticas?.seguindo ?? (perfil?.seguindo || []).length,
+    favorito: Boolean(perfil?.favoritoId || perfil?.favorito?.id),
   })
 }

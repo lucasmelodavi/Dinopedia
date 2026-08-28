@@ -86,6 +86,14 @@ const CATALOGO = [
         simbolo: '🤝',
         meta: 1,
         progresso: (stats) => stats.seguindo
+    },
+    {
+        id: 'dinossauro_favorito',
+        nome: 'Dinossauro favorito',
+        descricao: 'Escolheu um dinossauro favorito',
+        simbolo: '❤️',
+        meta: 1,
+        progresso: (stats) => (stats.favorito ? 1 : 0)
     }
 ];
 
