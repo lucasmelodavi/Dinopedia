@@ -1848,7 +1848,8 @@ a {
 #meus-topicos.is-alvo,
 #conquistas.is-alvo,
 #enfeites.is-alvo,
-#favorito.is-alvo {
+#favorito.is-alvo,
+#mapa.is-alvo {
   box-shadow: 0 0 0 2px var(--green);
 }
 
@@ -1857,7 +1858,8 @@ a {
 #meus-topicos,
 #conquistas,
 #enfeites,
-#favorito {
+#favorito,
+#mapa {
   scroll-margin-top: 88px;
 }
 

@@ -128,6 +128,14 @@ function Icone({ nome }) {
       </svg>
     )
   }
+  if (nome === 'mapa') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s7-6.4 7-11.2A7 7 0 0 0 5 9.8C5 14.6 12 21 12 21z" />
+        <circle cx="12" cy="10" r="2.2" />
+      </svg>
+    )
+  }
   if (nome === 'coracao') {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -153,7 +161,7 @@ export default function IndiceLateral({ aberto, onMudar }) {
 
   const principais = [
     { to: '/', label: 'Início', icon: 'casa', fim: true },
-    { to: '/#mapa', label: 'Mapa', icon: 'globo' },
+    { to: '/#mapa', label: 'Mapa', icon: 'mapa' },
     { to: '/linha-do-tempo', label: 'Linha do Tempo', icon: 'globo' },
     { to: '/dinossauros', label: 'Dinossauros', icon: 'pegada' },
   ]
@@ -194,6 +202,12 @@ export default function IndiceLateral({ aberto, onMudar }) {
   function classeLink(link) {
     return ({ isActive }) => {
       if (link.ativo === false) return undefined
+      if (link.to === '/#mapa') {
+        return location.pathname === '/' && location.hash === '#mapa' ? 'active' : undefined
+      }
+      if (link.to === '/' && location.hash === '#mapa') {
+        return undefined
+      }
       return isActive ? 'active' : undefined
     }
   }
