@@ -450,6 +450,12 @@ export default function Perfil() {
               {perfil?.criador ? <span className="perfil-badge perfil-badge-criador">Criador</span> : null}
             </div>
             {meuPerfil && perfil?.email ? <p className="perfil-meta">{perfil.email}</p> : null}
+            {perfil?.favorito ? (
+              <p className="perfil-meta">
+                Dinossauro favorito:{' '}
+                <Link to={`/dinossauros/${perfil.favorito.id}`}>{perfil.favorito.nome}</Link>
+              </p>
+            ) : null}
             {conquistas.desbloqueadas > 0 ? (
               <ul className="perfil-medalhas" aria-label="Conquistas desbloqueadas">
                 {conquistas.itens
@@ -540,6 +546,32 @@ export default function Perfil() {
             <span>Seguindo</span>
           </li>
         </ul>
+      </article>
+
+      <article className="perfil-cartao" id="favorito">
+        <div className="perfil-cartao-topo">
+          <h2>Dinossauro favorito</h2>
+          {perfil.favorito ? <Link to={`/dinossauros/${perfil.favorito.id}`}>Ver ficha</Link> : null}
+        </div>
+        {perfil.favorito ? (
+          <Link to={`/dinossauros/${perfil.favorito.id}`} className="perfil-favorito">
+            <div
+              className="perfil-favorito-foto"
+              style={perfil.favorito.fotoUrl ? { backgroundImage: `url(${perfil.favorito.fotoUrl})` } : undefined}
+            />
+            <span>
+              <strong>{perfil.favorito.nome}</strong>
+              {perfil.favorito.nomeCientifico ? <small>{perfil.favorito.nomeCientifico}</small> : null}
+              {perfil.favorito.periodo ? <small>{perfil.favorito.periodo}</small> : null}
+            </span>
+          </Link>
+        ) : (
+          <p>
+            {meuPerfil
+              ? 'Ainda sem favorito. Abra uma ficha no catálogo e toque em Marcar como favorito.'
+              : 'Esta pessoa ainda não escolheu um dinossauro favorito.'}
+          </p>
+        )}
       </article>
 
       <article className="perfil-cartao" id="conquistas">
@@ -795,13 +827,18 @@ export default function Perfil() {
         ) : (
           <div className="perfil-dinos">
             {dinossauros.map((dino) => (
-              <Link key={dino.id} to={`/dinossauros/${dino.id}`} className="perfil-dino">
+              <Link key={dino.id} to={`/dinossauros/${dino.id}`} className={`perfil-dino ${Number(perfil?.favoritoId) === Number(dino.id) || Number(perfil?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}>
                 <div
                   className="perfil-dino-foto"
                   style={dino.fotoUrl ? { backgroundImage: `url(${dino.fotoUrl})` } : undefined}
                 />
                 <strong>{dino.nome}</strong>
-                <small>Cadastrado em {formatarData(dino.criadoEm)}</small>
+                <small>
+                  {Number(perfil?.favoritoId) === Number(dino.id) || Number(perfil?.favorito?.id) === Number(dino.id)
+                    ? 'Favorito · '
+                    : ''}
+                  Cadastrado em {formatarData(dino.criadoEm)}
+                </small>
               </Link>
             ))}
           </div>

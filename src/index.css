@@ -541,6 +541,10 @@ a {
   background: #141914;
 }
 
+.card-dino.is-favorito {
+  box-shadow: 0 0 0 2px #e8b040;
+}
+
 .card-dino-foto {
   height: 160px;
   background:
@@ -711,6 +715,68 @@ a {
     radial-gradient(circle at 50% 30%, #4d7a32, #1a2a14 70%);
   background-size: cover;
   background-position: center;
+}
+
+.ficha-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.favorito-acao {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.botao-favorito.is-ativo {
+  background: #e8b040;
+  color: #081208;
+}
+
+.card-dino-corpo .favorito-acao {
+  margin-top: 8px;
+}
+
+.perfil-favorito {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid rgba(232, 176, 64, 0.45);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(232, 176, 64, 0.12), #0e130e);
+  color: #fff;
+}
+
+.perfil-favorito-foto {
+  width: 92px;
+  height: 92px;
+  flex: 0 0 92px;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.45)),
+    radial-gradient(circle at 50% 30%, #4d7a32, #1a2a14 70%);
+  background-size: cover;
+  background-position: center;
+}
+
+.perfil-favorito span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.perfil-favorito small {
+  color: var(--muted);
+}
+
+.perfil-dino.is-favorito strong::after {
+  content: ' ★';
+  color: #e8b040;
 }
 
 .pagina-perfil h1 {
@@ -1584,7 +1650,8 @@ a {
 #configuracoes.is-alvo,
 #meus-topicos.is-alvo,
 #conquistas.is-alvo,
-#enfeites.is-alvo {
+#enfeites.is-alvo,
+#favorito.is-alvo {
   box-shadow: 0 0 0 2px var(--green);
 }
 
@@ -1592,7 +1659,8 @@ a {
 #configuracoes,
 #meus-topicos,
 #conquistas,
-#enfeites {
+#enfeites,
+#favorito {
   scroll-margin-top: 88px;
 }
 

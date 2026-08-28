@@ -39,7 +39,8 @@ class User {
             foto: row.foto || null,
             descricao: row.descricao || '',
             pontos: Number(row.pontos) || 0,
-            enfeites: Enfeite.lerLista(row.enfeites)
+            enfeites: Enfeite.lerLista(row.enfeites),
+            favoritoId: row.favorito_id ? Number(row.favorito_id) : null
         };
     }
 
@@ -65,7 +66,8 @@ class User {
                 usuario.enfeites,
                 usuario.pontos,
                 User.ehCriador(usuario.email)
-            )
+            ),
+            favoritoId: usuario.favoritoId || null
         };
     }
 
@@ -81,8 +83,16 @@ class User {
             criador: publico.criador,
             pontos: publico.pontos,
             nivel: publico.nivel,
-            enfeites: publico.enfeites
+            enfeites: publico.enfeites,
+            favoritoId: publico.favoritoId
         };
+    }
+
+    static async garantirEstrutura() {
+        await pool.query(
+            `ALTER TABLE usuarios
+             ADD COLUMN IF NOT EXISTS favorito_id INTEGER REFERENCES dinossauros(id) ON DELETE SET NULL`
+        );
     }
 
     static async listarPublico({ nome = '', limit = 30 } = {}) {
@@ -197,7 +207,8 @@ class User {
         return User.atualizar(id, { foto });
     }
 
-    static async atualizar(id, { foto, descricao, enfeites } = {}) {
+    static async atualizar(id, { foto, descricao, enfeites, favoritoId } = {}) {
+        await User.garantirEstrutura();
         const atual = await User.buscarPorId(id);
         if (!atual) {
             throw new Error('Usuário não encontrado');
@@ -217,12 +228,26 @@ class User {
             ? Enfeite.validarEscolha(enfeites, atual.pontos, ehCriador)
             : Enfeite.filtrarEquipados(atual.enfeites, atual.pontos, ehCriador);
 
+        let proximoFavorito = atual.favoritoId;
+        if (favoritoId !== undefined) {
+            if (favoritoId === null || favoritoId === '' || favoritoId === false) {
+                proximoFavorito = null;
+            } else {
+                const Dinosaur = require('./Dinosaur');
+                const dino = await Dinosaur.buscarPorId(parseInt(favoritoId, 10));
+                if (!dino) {
+                    throw new Error('Dinossauro não encontrado');
+                }
+                proximoFavorito = dino.id;
+            }
+        }
+
         const resultado = await pool.query(
             `UPDATE usuarios
-             SET foto = $1, descricao = $2, enfeites = $3
-             WHERE id = $4
+             SET foto = $1, descricao = $2, enfeites = $3, favorito_id = $4
+             WHERE id = $5
              RETURNING *`,
-            [proximaFoto, proximaDescricao, JSON.stringify(proximosEnfeites), id]
+            [proximaFoto, proximaDescricao, JSON.stringify(proximosEnfeites), proximoFavorito, id]
         );
 
         return User.mapear(resultado.rows[0]);

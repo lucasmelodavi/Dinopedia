@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import BotaoFavorito from '../components/BotaoFavorito'
 import { DIETAS, FAMILIAS, PERIODOS } from '../constants'
+import { useAuth } from '../context/AuthContext'
 import { listarDinossauros } from '../services/dinosaurService'
 
 const FILTROS_VAZIOS = {
@@ -11,6 +13,7 @@ const FILTROS_VAZIOS = {
 }
 
 export default function Catalogo() {
+  const { usuario } = useAuth()
   const [searchParams] = useSearchParams()
   const periodoUrl = searchParams.get('periodo') || ''
   const [filtros, setFiltros] = useState({ ...FILTROS_VAZIOS, periodo: periodoUrl })
@@ -146,7 +149,7 @@ export default function Catalogo() {
 
       <div className="grade-dinos catalogo-grade">
         {dinossauros.map((dino) => (
-          <article key={dino.id} className="card-dino">
+          <article key={dino.id} className={`card-dino ${Number(usuario?.favoritoId) === Number(dino.id) || Number(usuario?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}>
             <div
               className="card-dino-foto"
               style={dino.fotoUrl ? { backgroundImage: `url(${dino.fotoUrl})` } : undefined}
@@ -169,6 +172,7 @@ export default function Catalogo() {
               <Link to={`/dinossauros/${dino.id}`} className="botao botao-fantasma">
                 Ver detalhes
               </Link>
+              <BotaoFavorito dinoId={dino.id} />
             </div>
           </article>
         ))}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import BotaoFavorito from '../components/BotaoFavorito'
 import { useAuth } from '../context/AuthContext'
 import { buscarDinossauro } from '../services/dinosaurService'
 
@@ -59,11 +60,14 @@ export default function DinossauroDetalhe() {
             </p>
           ) : null}
           <p>{dino.descricao}</p>
-          {autenticado ? (
-            <Link to={`/dinossauros/${dino.id}/editar`} className="botao botao-fantasma">
-              Editar ficha e curiosidades
-            </Link>
-          ) : null}
+          <div className="ficha-acoes">
+            <BotaoFavorito dinoId={dino.id} />
+            {autenticado ? (
+              <Link to={`/dinossauros/${dino.id}/editar`} className="botao botao-fantasma">
+                Editar ficha e curiosidades
+              </Link>
+            ) : null}
+          </div>
         </div>
       </article>
 

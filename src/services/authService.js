@@ -32,6 +32,10 @@ export function atualizarEnfeites(enfeites) {
   return request('/auth/perfil', { method: 'PUT', body: { enfeites } })
 }
 
+export function atualizarFavorito(favoritoId) {
+  return request('/auth/perfil', { method: 'PUT', body: { favoritoId } })
+}
+
 export function enviarFotoPerfil(arquivo) {
   const form = new FormData()
   form.append('foto', arquivo)

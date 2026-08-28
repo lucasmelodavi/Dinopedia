@@ -5,6 +5,18 @@ const Pontos = require('../models/Pontos');
 const Topico = require('../models/Topico');
 const Conquista = require('../models/Conquista');
 const Enfeite = require('../config/enfeites');
+const Dinosaur = require('../models/Dinosaur');
+
+function resumirFavorito(dino) {
+    if (!dino) return null;
+    return {
+        id: dino.id,
+        nome: dino.nome,
+        nomeCientifico: dino.nomeCientifico,
+        fotoUrl: dino.fotoUrl || null,
+        periodo: dino.periodo || null
+    };
+}
 
 async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     try {
@@ -12,7 +24,20 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
     } catch (erro) {
         console.error('Pontos no perfil', usuario.id, erro.message);
     }
+    try {
+        await User.garantirEstrutura();
+    } catch (erro) {
+        console.error('Favorito no perfil', erro.message);
+    }
     let atual = (await User.buscarPorId(usuario.id)) || usuario;
+    let favorito = null;
+    if (atual.favoritoId) {
+        favorito = resumirFavorito(await Dinosaur.buscarPorId(atual.favoritoId).catch(() => null));
+        if (!favorito) {
+            atual = (await User.atualizar(atual.id, { favoritoId: null }).catch(() => atual)) || atual;
+            atual.favoritoId = null;
+        }
+    }
     const [edicoes, contagem, seguidores, seguindo, historicoPontos, topicos, conquistas] = await Promise.all([
         Edicao.listarPorUsuario(atual.id).catch(() => []),
         Follow.contar(atual.id).catch(() => ({ seguidores: 0, seguindo: 0 })),
@@ -40,6 +65,8 @@ async function montarPerfil(usuario, visitanteId, { comEmail = false } = {}) {
         seguindo,
         historicoPontos,
         conquistas,
+        favoritoId: atual.favoritoId || null,
+        favorito,
         estatisticas: {
             edicoes: edicoes.length,
             topicos: topicos.length,
