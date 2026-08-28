@@ -13,6 +13,7 @@ const LOCAIS = [
   { chaves: ['montana'], lat: 47.0, lng: -109.6 },
   { chaves: ['alberta', 'canada'], lat: 53.9, lng: -110.5 },
   { chaves: ['texas'], lat: 31.5, lng: -99.3 },
+  { chaves: ['novo mexico', 'new mexico'], lat: 34.3, lng: -106.0 },
   { chaves: ['estados unidos', 'eua', 'usa', 'america do norte'], lat: 39.8, lng: -98.6 },
   { chaves: ['america do sul'], lat: -14.2, lng: -56.0 },
   { chaves: ['mexico', 'coahuila'], lat: 27.3, lng: -102.0 },
@@ -20,10 +21,15 @@ const LOCAIS = [
   { chaves: ['argentina', 'vale da lua'], lat: -38.4, lng: -63.6 },
   { chaves: ['chile'], lat: -35.7, lng: -71.5 },
   { chaves: ['brasil', 'minas gerais', 'maranhao', 'ceara'], lat: -14.2, lng: -51.9 },
+  { chaves: ['amazonia'], lat: -3.5, lng: -62.0 },
+  { chaves: ['peru'], lat: -9.2, lng: -75.0 },
+  { chaves: ['colombia'], lat: 4.6, lng: -74.3 },
   { chaves: ['deserto de gobi', 'gobi', 'mongolia'], lat: 43.5, lng: 104.0 },
   { chaves: ['liaoning', 'china'], lat: 35.9, lng: 104.2 },
   { chaves: ['japao'], lat: 36.2, lng: 138.3 },
   { chaves: ['quirguistao', 'quirguizistan'], lat: 41.2, lng: 74.8 },
+  { chaves: ['coreia'], lat: 36.5, lng: 127.9 },
+  { chaves: ['russia', 'siberia'], lat: 61.5, lng: 99.0 },
   { chaves: ['asia'], lat: 45.0, lng: 90.0 },
   { chaves: ['india'], lat: 21.1, lng: 78.0 },
   { chaves: ['marrocos', 'kem kem'], lat: 30.9, lng: -4.4 },
@@ -36,8 +42,10 @@ const LOCAIS = [
   { chaves: ['alemanha', 'solnhofen'], lat: 51.2, lng: 10.4 },
   { chaves: ['franca'], lat: 46.2, lng: 2.2 },
   { chaves: ['espanha', 'portugal'], lat: 40.0, lng: -4.5 },
+  { chaves: ['italia'], lat: 42.8, lng: 12.6 },
   { chaves: ['europa'], lat: 50.0, lng: 10.0 },
   { chaves: ['australia', 'queensland'], lat: -25.3, lng: 133.8 },
+  { chaves: ['nova zelandia'], lat: -41.5, lng: 172.8 },
   { chaves: ['antartida', 'antartica'], lat: -78.0, lng: 20.0 },
 ]
 
@@ -84,9 +92,9 @@ function peloLista(lista, valor) {
 
 export function localizarFicha(dino) {
   return (
-    peloLista(LOCAIS, dino?.regiao) ||
     peloLista(NOMES, dino?.nome) ||
     peloLista(NOMES, dino?.nomeCientifico) ||
+    peloLista(LOCAIS, dino?.regiao) ||
     peloLista(LOCAIS, `${dino?.nome || ''} ${dino?.nomeCientifico || ''}`)
   )
 }
@@ -116,20 +124,20 @@ export function espalharPontos(pontos) {
 }
 
 export function pontosDasFichas(fichas = [], preferidos = []) {
-  const porId = new Map()
-
+  const api = new Map()
   preferidos.forEach((ponto) => {
     if (Number.isFinite(Number(ponto.lat)) && Number.isFinite(Number(ponto.lng))) {
-      porId.set(Number(ponto.id), ponto)
+      api.set(Number(ponto.id), ponto)
     }
   })
 
+  const porId = new Map()
   fichas.forEach((dino) => {
-    const id = Number(dino.id)
-    if (porId.has(id)) return
-    const ponto = localizarFicha(dino)
+    const local = localizarFicha(dino)
+    const daApi = api.get(Number(dino.id))
+    const ponto = local || (daApi ? { lat: daApi.lat, lng: daApi.lng } : null)
     if (!ponto) return
-    porId.set(id, {
+    porId.set(Number(dino.id), {
       id: dino.id,
       nome: dino.nome,
       fotoUrl: dino.fotoUrl,
@@ -139,5 +147,5 @@ export function pontosDasFichas(fichas = [], preferidos = []) {
     })
   })
 
-  return espalharPontos([...porId.values()])
+  return [...porId.values()]
 }

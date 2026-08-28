@@ -131,8 +131,8 @@ function Icone({ nome }) {
   if (nome === 'mapa') {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 21s7-6.4 7-11.2A7 7 0 0 0 5 9.8C5 14.6 12 21 12 21z" />
-        <circle cx="12" cy="10" r="2.2" />
+        <path d="M5 7 10 5l4 2 5-2v12l-5 2-4-2-5 2z" />
+        <path d="M10 5v12M14 7v12" />
       </svg>
     )
   }

@@ -401,7 +401,7 @@ a {
 }
 
 .home {
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .hero {
@@ -620,19 +620,113 @@ a {
 .mapa-mundi {
   position: relative;
   width: min(1280px, 100%);
-  min-height: 320px;
+  min-height: 340px;
   margin: 0 auto;
   aspect-ratio: 2 / 1;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: #0a120e;
+  background: #0c1610;
 }
 
-.mapa-mundi-svg {
-  display: block;
+.mapa-mundi-vista {
+  position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.mapa-mundi-vista.is-arrastavel {
+  cursor: grab;
+  touch-action: none;
+}
+
+.mapa-mundi-vista.is-arrastando {
+  cursor: grabbing;
+}
+
+.mapa-mundi-vista.is-clicando {
+  cursor: zoom-in;
+}
+
+.mapa-mundi-foto {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mapa-zoom {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 6px;
+  transform: translateX(-50%);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(10, 16, 12, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.mapa-zoom-btn,
+.mapa-zoom-mundo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #e8b040;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mapa-zoom-btn:hover:not(:disabled),
+.mapa-zoom-mundo:hover:not(:disabled) {
+  background: rgba(94, 163, 58, 0.2);
+}
+
+.mapa-zoom-btn:disabled,
+.mapa-zoom-mundo:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mapa-zoom-mundo svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mapa-zoom-barra {
+  width: min(180px, 28vw);
+  height: 6px;
+  margin: 0 4px;
+  accent-color: #e8b040;
+  cursor: pointer;
+}
+
+.mapa-zoom-valor {
+  min-width: 3.2em;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
 }
 
 .mapa-vazio {
@@ -648,20 +742,50 @@ a {
   text-align: center;
 }
 
+.mapa-pinos {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .mapa-balao {
   position: absolute;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 48px;
+  width: 28px;
+  pointer-events: none;
   transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
   color: #fff;
 }
 
+.mapa-balao:hover,
+.mapa-balao:focus-within {
+  z-index: 6;
+}
+
+.mapa-balao-botao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .mapa-balao-foto {
-  width: 38px;
-  height: 38px;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  max-width: 26px;
+  max-height: 26px;
   border: 2px solid #e8b040;
   border-radius: 50%;
   background:
@@ -675,7 +799,7 @@ a {
   content: '';
   width: 0;
   height: 0;
-  border: 7px solid transparent;
+  border: 6px solid transparent;
   border-top-color: #e8b040;
   margin-top: -1px;
 }
@@ -687,7 +811,7 @@ a {
   transform: translateX(-50%);
   padding: 4px 8px;
   border-radius: 8px;
-  background: rgba(8, 12, 8, 0.9);
+  background: rgba(8, 12, 8, 0.92);
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
@@ -695,18 +819,13 @@ a {
   pointer-events: none;
 }
 
-.mapa-balao:hover,
-.mapa-balao:focus-visible {
-  z-index: 5;
-}
-
 .mapa-balao:hover .mapa-balao-foto,
-.mapa-balao:focus-visible .mapa-balao-foto {
-  transform: scale(1.12);
+.mapa-balao:focus-within .mapa-balao-foto {
+  transform: scale(1.06);
 }
 
 .mapa-balao:hover strong,
-.mapa-balao:focus-visible strong {
+.mapa-balao:focus-within strong {
   opacity: 1;
 }
 
@@ -2262,9 +2381,26 @@ a {
     padding: 8px 18px 56px;
   }
 
+  .mapa-zoom {
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    width: auto;
+    transform: none;
+    justify-content: center;
+  }
+
+  .mapa-zoom-barra {
+    width: min(120px, 30vw);
+  }
+
   .mapa-balao-foto {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    max-width: 26px;
+    max-height: 26px;
   }
 
   .perfil-resumo,
