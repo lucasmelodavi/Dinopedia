@@ -1,7 +1,7 @@
 function semAcento(valor) {
   return String(valor || '')
     .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
@@ -14,6 +14,7 @@ const LOCAIS = [
   { chaves: ['alberta', 'canada'], lat: 53.9, lng: -110.5 },
   { chaves: ['texas'], lat: 31.5, lng: -99.3 },
   { chaves: ['estados unidos', 'eua', 'usa', 'america do norte'], lat: 39.8, lng: -98.6 },
+  { chaves: ['america do sul'], lat: -14.2, lng: -56.0 },
   { chaves: ['mexico', 'coahuila'], lat: 27.3, lng: -102.0 },
   { chaves: ['patagonia', 'neuquen', 'chubut', 'santa cruz'], lat: -43.3, lng: -68.5 },
   { chaves: ['argentina', 'vale da lua'], lat: -38.4, lng: -63.6 },
@@ -21,6 +22,9 @@ const LOCAIS = [
   { chaves: ['brasil', 'minas gerais', 'maranhao', 'ceara'], lat: -14.2, lng: -51.9 },
   { chaves: ['deserto de gobi', 'gobi', 'mongolia'], lat: 43.5, lng: 104.0 },
   { chaves: ['liaoning', 'china'], lat: 35.9, lng: 104.2 },
+  { chaves: ['japao'], lat: 36.2, lng: 138.3 },
+  { chaves: ['quirguistao', 'quirguizistan'], lat: 41.2, lng: 74.8 },
+  { chaves: ['asia'], lat: 45.0, lng: 90.0 },
   { chaves: ['india'], lat: 21.1, lng: 78.0 },
   { chaves: ['marrocos', 'kem kem'], lat: 30.9, lng: -4.4 },
   { chaves: ['egito', 'bahariya'], lat: 26.8, lng: 30.8 },

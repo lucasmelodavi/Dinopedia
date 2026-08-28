@@ -132,6 +132,9 @@ export default function Inicio() {
           <p>Nenhum destaque ainda. Suba o backend para carregar a lista.</p>
         ) : null}
         <div className="destaques-acao">
+          <a href="#mapa" className="botao">
+            Ver mapa-múndi
+          </a>
           <Link to="/dinossauros" className="botao botao-fantasma">
             Ver todos os dinossauros
           </Link>

@@ -20,6 +20,7 @@ const LOCAIS = [
     { chaves: ['liaoning', 'china'], lat: 35.9, lng: 104.2 },
     { chaves: ['india'], lat: 21.1, lng: 78.0 },
     { chaves: ['japao'], lat: 36.2, lng: 138.3 },
+    { chaves: ['quirguistao', 'quirguizistan'], lat: 41.2, lng: 74.8 },
     { chaves: ['coreia'], lat: 36.5, lng: 127.9 },
     { chaves: ['russia', 'siberia'], lat: 61.5, lng: 99.0 },
     { chaves: ['asia'], lat: 45.0, lng: 90.0 },

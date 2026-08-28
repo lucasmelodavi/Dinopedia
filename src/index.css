@@ -593,6 +593,8 @@ a {
 .destaques-acao {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 28px;
 }
 
@@ -618,6 +620,7 @@ a {
 .mapa-mundi {
   position: relative;
   width: min(1280px, 100%);
+  min-height: 320px;
   margin: 0 auto;
   aspect-ratio: 2 / 1;
   overflow: hidden;

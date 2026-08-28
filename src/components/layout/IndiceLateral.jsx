@@ -153,6 +153,7 @@ export default function IndiceLateral({ aberto, onMudar }) {
 
   const principais = [
     { to: '/', label: 'Início', icon: 'casa', fim: true },
+    { to: '/#mapa', label: 'Mapa', icon: 'globo' },
     { to: '/linha-do-tempo', label: 'Linha do Tempo', icon: 'globo' },
     { to: '/dinossauros', label: 'Dinossauros', icon: 'pegada' },
   ]

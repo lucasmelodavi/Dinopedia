@@ -46,10 +46,10 @@ function Continentes() {
 
 export default function MapaMundial({ pontos = [] }) {
   return (
-    <section className="mapa-secao" aria-labelledby="mapa-titulo">
-      <h2 id="mapa-titulo">Mapa das fichas</h2>
+    <section className="mapa-secao" id="mapa" aria-labelledby="mapa-titulo">
+      <h2 id="mapa-titulo">Mapa-múndi</h2>
       <p className="mapa-ajuda">
-        Cada balão é de uma ficha que já existe. O lugar sai da região (ou do nome, se a região estiver vazia).
+        Cada balão é uma ficha. O lugar sai da região escrita nela.
       </p>
       <div className="mapa-mundi">
         <Continentes />
@@ -69,7 +69,7 @@ export default function MapaMundial({ pontos = [] }) {
           </Link>
         ))}
         {pontos.length === 0 ? (
-          <p className="mapa-vazio">Ainda não há fichas com região para mostrar no mapa.</p>
+          <p className="mapa-vazio">Carregando os dinossauros no mapa...</p>
         ) : null}
       </div>
     </section>
