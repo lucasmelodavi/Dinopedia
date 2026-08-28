@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import BotaoFavorito from '../components/BotaoFavorito'
+import { useAuth } from '../context/AuthContext'
 import { listarDestaques, listarDinossauros } from '../services/dinosaurService'
 
 const PERIODOS_VISUAL = [
@@ -9,6 +11,7 @@ const PERIODOS_VISUAL = [
 ]
 
 export default function Inicio() {
+  const { usuario } = useAuth()
   const [destaques, setDestaques] = useState([])
 
   useEffect(() => {
@@ -85,7 +88,7 @@ export default function Inicio() {
         </h2>
         <div className="grade-dinos">
           {destaques.map((dino) => (
-            <article key={dino.id} className="card-dino">
+            <article key={dino.id} className={`card-dino ${Number(usuario?.favoritoId) === Number(dino.id) || Number(usuario?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}>
               <div
                 className="card-dino-foto"
                 style={
@@ -93,7 +96,9 @@ export default function Inicio() {
                     ? { backgroundImage: `url(${dino.fotoUrl})` }
                     : undefined
                 }
-              />
+              >
+                <BotaoFavorito dinoId={dino.id} />
+              </div>
               <div className="card-dino-corpo">
                 <h3>{dino.nome}</h3>
                 <p className="cientifico">{dino.nomeCientifico}</p>

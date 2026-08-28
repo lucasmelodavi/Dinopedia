@@ -568,7 +568,7 @@ export default function Perfil() {
         ) : (
           <p>
             {meuPerfil
-              ? 'Ainda sem favorito. Abra uma ficha no catálogo e toque em Marcar como favorito.'
+              ? 'Ainda sem favorito. Toque no coração da ficha ou do catálogo para curtir um dinossauro.'
               : 'Esta pessoa ainda não escolheu um dinossauro favorito.'}
           </p>
         )}

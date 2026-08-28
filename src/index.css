@@ -546,6 +546,7 @@ a {
 }
 
 .card-dino-foto {
+  position: relative;
   height: 160px;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.45)),
@@ -709,8 +710,10 @@ a {
 }
 
 .ficha-foto {
+  position: relative;
   min-height: 240px;
   border-radius: 16px;
+  overflow: hidden;
   background:
     radial-gradient(circle at 50% 30%, #4d7a32, #1a2a14 70%);
   background-size: cover;
@@ -725,19 +728,94 @@ a {
   align-items: center;
 }
 
-.favorito-acao {
+.curtir-wrap--foto {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.curtir-wrap--linha {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
 }
 
-.botao-favorito.is-ativo {
-  background: #e8b040;
-  color: #081208;
+.curtir-favorito {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(8, 12, 8, 0.58);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-.card-dino-corpo .favorito-acao {
-  margin-top: 8px;
+.curtir-favorito svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.curtir-favorito:hover {
+  background: rgba(8, 12, 8, 0.78);
+  transform: scale(1.06);
+}
+
+.curtir-favorito:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.curtir-favorito.is-ativo {
+  color: #ff5a7a;
+  background: rgba(8, 12, 8, 0.72);
+}
+
+.curtir-favorito.is-estouro svg {
+  animation: curtir-estouro 0.38s ease;
+}
+
+.curtir-wrap--linha .curtir-favorito {
+  width: auto;
+  height: 42px;
+  padding: 0 14px 0 12px;
+  background: #1a2218;
+  border: 1px solid var(--line);
+  box-shadow: none;
+  color: var(--text);
+}
+
+.curtir-wrap--linha .curtir-favorito span {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.curtir-wrap--linha .curtir-favorito.is-ativo {
+  color: #ff5a7a;
+  border-color: rgba(255, 90, 122, 0.45);
+  background: rgba(255, 90, 122, 0.12);
+}
+
+@keyframes curtir-estouro {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .perfil-favorito {

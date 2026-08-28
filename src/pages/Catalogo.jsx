@@ -153,7 +153,9 @@ export default function Catalogo() {
             <div
               className="card-dino-foto"
               style={dino.fotoUrl ? { backgroundImage: `url(${dino.fotoUrl})` } : undefined}
-            />
+            >
+              <BotaoFavorito dinoId={dino.id} />
+            </div>
             <div className="card-dino-corpo">
               <h3>{dino.nome}</h3>
               <p className="cientifico">{dino.nomeCientifico}</p>
@@ -172,7 +174,6 @@ export default function Catalogo() {
               <Link to={`/dinossauros/${dino.id}`} className="botao botao-fantasma">
                 Ver detalhes
               </Link>
-              <BotaoFavorito dinoId={dino.id} />
             </div>
           </article>
         ))}
