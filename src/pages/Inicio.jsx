@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import BotaoFavorito from '../components/BotaoFavorito'
 import MapaMundial from '../components/MapaMundial'
 import { useAuth } from '../context/AuthContext'
@@ -14,6 +14,7 @@ const PERIODOS_VISUAL = [
 
 export default function Inicio() {
   const { usuario } = useAuth()
+  const location = useLocation()
   const [destaques, setDestaques] = useState([])
   const [pontosMapa, setPontosMapa] = useState([])
 
@@ -48,6 +49,22 @@ export default function Inicio() {
       ativo = false
     }
   }, [])
+
+  useEffect(() => {
+    if (location.hash !== '#mapa') return undefined
+    const alvo = document.getElementById('mapa')
+    if (!alvo) return undefined
+    const ir = window.setTimeout(() => {
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      alvo.classList.add('is-alvo')
+    }, 80)
+    const limpar = window.setTimeout(() => alvo.classList.remove('is-alvo'), 1800)
+    return () => {
+      window.clearTimeout(ir)
+      window.clearTimeout(limpar)
+      alvo.classList.remove('is-alvo')
+    }
+  }, [location.hash, pontosMapa.length])
 
   return (
     <div className="home">
@@ -132,9 +149,9 @@ export default function Inicio() {
           <p>Nenhum destaque ainda. Suba o backend para carregar a lista.</p>
         ) : null}
         <div className="destaques-acao">
-          <a href="#mapa" className="botao">
+          <Link to="/#mapa" className="botao">
             Ver mapa-múndi
-          </a>
+          </Link>
           <Link to="/dinossauros" className="botao botao-fantasma">
             Ver todos os dinossauros
           </Link>
