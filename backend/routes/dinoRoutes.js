@@ -6,6 +6,7 @@ const upload = require('../middlewares/uploadMiddleware');
 
 router.get('/', dinoController.listarDinossauros);
 router.get('/destaques', dinoController.listarDestaques);
+router.get('/mapa', dinoController.listarMapa);
 router.get('/:id/topicos', dinoController.listarTopicos);
 router.get('/:id', dinoController.buscarDinossauro);
 

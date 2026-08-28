@@ -39,7 +39,9 @@ export default function DinossauroDetalhe() {
         <div
           className="ficha-foto"
           style={dino.fotoUrl ? { backgroundImage: `url(${dino.fotoUrl})` } : undefined}
-        />
+        >
+          <BotaoFavorito dinoId={dino.id} />
+        </div>
         <div>
           <p className="cientifico">{dino.periodo}</p>
           <h1>{dino.nome}</h1>
@@ -61,7 +63,7 @@ export default function DinossauroDetalhe() {
           ) : null}
           <p>{dino.descricao}</p>
           <div className="ficha-acoes">
-            <BotaoFavorito dinoId={dino.id} />
+            <BotaoFavorito dinoId={dino.id} variante="linha" />
             {autenticado ? (
               <Link to={`/dinossauros/${dino.id}/editar`} className="botao botao-fantasma">
                 Editar ficha e curiosidades

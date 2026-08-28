@@ -7,6 +7,7 @@ const {
     normalizarPeriodo,
     semAcento
 } = require('../config/constants');
+const { geocodificar, espalhar } = require('../config/geocodigo');
 
 const SORT_MAP = {
     nome: 'd.nome',
@@ -39,6 +40,8 @@ class Dinosaur {
             fotoUrl: row.foto ? `${config.publicUrl}${row.foto}` : null,
             anoDescoberta: row.ano_descoberta,
             destaque: Boolean(row.destaque),
+            latitude: row.latitude !== null && row.latitude !== undefined ? Number(row.latitude) : null,
+            longitude: row.longitude !== null && row.longitude !== undefined ? Number(row.longitude) : null,
             usuarioId: row.criado_por,
             autorNome: row.autor_nome || null,
             criadoEm: row.created_at,
@@ -74,6 +77,64 @@ class Dinosaur {
             throw new Error(`Família inválida. Opções: ${FAMILIAS.join(', ')}`);
         }
         return familia;
+    }
+
+    static async garantirEstrutura() {
+        await pool.query(
+            `ALTER TABLE dinossauros
+             ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION`
+        );
+        await pool.query(
+            `ALTER TABLE dinossauros
+             ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION`
+        );
+    }
+
+    static async aplicarCoordenadas(id, regiao, nome) {
+        await Dinosaur.garantirEstrutura();
+        const ponto = await geocodificar(regiao, nome);
+        if (!ponto) return null;
+        await pool.query(
+            `UPDATE dinossauros
+             SET latitude = $1, longitude = $2
+             WHERE id = $3`,
+            [ponto.lat, ponto.lng, id]
+        );
+        return ponto;
+    }
+
+    static async listarMapa() {
+        await Dinosaur.garantirEstrutura();
+        const resultado = await pool.query(
+            `SELECT d.*, p.nome AS periodo_nome, u.nome AS autor_nome
+             FROM dinossauros d
+             JOIN periodos p ON p.id = d.periodo_id
+             LEFT JOIN usuarios u ON u.id = d.criado_por
+             ORDER BY d.id ASC`
+        );
+
+        for (const row of resultado.rows) {
+            if (row.latitude !== null && row.longitude !== null) continue;
+            const ponto = await Dinosaur.aplicarCoordenadas(row.id, row.regiao, row.nome);
+            if (ponto) {
+                row.latitude = ponto.lat;
+                row.longitude = ponto.lng;
+            }
+        }
+
+        const pontos = resultado.rows
+            .map(Dinosaur.mapear)
+            .filter((dino) => Number.isFinite(dino.latitude) && Number.isFinite(dino.longitude))
+            .map((dino) => ({
+                id: dino.id,
+                nome: dino.nome,
+                fotoUrl: dino.fotoUrl,
+                regiao: dino.regiao,
+                lat: dino.latitude,
+                lng: dino.longitude
+            }));
+
+        return espalhar(pontos);
     }
 
     static chaveNome(valor) {
@@ -131,12 +192,15 @@ class Dinosaur {
         const familiaNormalizada = Dinosaur.validarFamilia(familia);
         const periodoRow = await Dinosaur.buscarPeriodoId(periodo);
         await Dinosaur.garantirUnico({ nome, nomeCientifico });
+        await Dinosaur.garantirEstrutura();
+        const ponto = await geocodificar(regiao, nome);
 
         const resultado = await pool.query(
             `INSERT INTO dinossauros (
                 nome, nome_cientifico, periodo_id, dieta, descricao,
-                comprimento, regiao, ano_descoberta, familia, destaque, criado_por
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                comprimento, regiao, ano_descoberta, familia, destaque, criado_por,
+                latitude, longitude
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
              RETURNING *`,
             [
                 nome,
@@ -149,7 +213,9 @@ class Dinosaur {
                 anoDescoberta ?? null,
                 familiaNormalizada,
                 Boolean(destaque),
-                usuarioId
+                usuarioId,
+                ponto ? ponto.lat : null,
+                ponto ? ponto.lng : null
             ]
         );
 
@@ -214,6 +280,17 @@ class Dinosaur {
             ignorarId: id
         });
 
+        await Dinosaur.garantirEstrutura();
+        const regiaoMudou =
+            dados.regiao !== undefined && String(dados.regiao || '') !== String(atual.regiao || '');
+        let latitude = atual.latitude;
+        let longitude = atual.longitude;
+        if (regiaoMudou || latitude == null || longitude == null) {
+            const ponto = await geocodificar(proximo.regiao, proximo.nome);
+            latitude = ponto ? ponto.lat : null;
+            longitude = ponto ? ponto.lng : null;
+        }
+
         await pool.query(
             `UPDATE dinossauros SET
                 nome = $1,
@@ -227,8 +304,10 @@ class Dinosaur {
                 familia = $9,
                 foto = $10,
                 destaque = $11,
+                latitude = $12,
+                longitude = $13,
                 updated_at = NOW()
-             WHERE id = $12
+             WHERE id = $14
              RETURNING *`,
             [
                 proximo.nome,
@@ -242,6 +321,8 @@ class Dinosaur {
                 proximo.familia ?? null,
                 proximo.foto ?? null,
                 Boolean(proximo.destaque),
+                latitude,
+                longitude,
                 id
             ]
         );

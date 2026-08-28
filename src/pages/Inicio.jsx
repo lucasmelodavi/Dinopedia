@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listarDestaques, listarDinossauros } from '../services/dinosaurService'
+import BotaoFavorito from '../components/BotaoFavorito'
+import MapaMundial from '../components/MapaMundial'
+import { useAuth } from '../context/AuthContext'
+import { pontosDasFichas } from '../constants/geocodigo'
+import { listarDestaques, listarDinossauros, listarMapa } from '../services/dinosaurService'
 
 const PERIODOS_VISUAL = [
   { nome: 'Triássico', anos: '252 - 201 M.A.', cor: 'triassico' },
@@ -9,26 +13,32 @@ const PERIODOS_VISUAL = [
 ]
 
 export default function Inicio() {
+  const { usuario } = useAuth()
   const [destaques, setDestaques] = useState([])
+  const [pontosMapa, setPontosMapa] = useState([])
 
   useEffect(() => {
     let ativo = true
 
     async function carregar() {
       try {
-        const [destaqueRes, listaRes] = await Promise.all([
+        const [destaqueRes, listaRes, mapaRes] = await Promise.all([
           listarDestaques().catch(() => ({ data: [] })),
-          listarDinossauros({ limit: 8 }).catch(() => ({ data: [] })),
+          listarDinossauros({ limit: 500, sort: 'id' }).catch(() => ({ data: [] })),
+          listarMapa().catch(() => ({ data: [] })),
         ])
         if (!ativo) return
 
+        const todas = listaRes.data || []
         const destaquesLista = destaqueRes.data?.length
           ? destaqueRes.data
-          : listaRes.data || []
+          : todas.slice(0, 8)
         setDestaques(destaquesLista.slice(0, 4))
+        setPontosMapa(pontosDasFichas(todas, mapaRes.data || []))
       } catch {
         if (ativo) {
           setDestaques([])
+          setPontosMapa([])
         }
       }
     }
@@ -85,7 +95,7 @@ export default function Inicio() {
         </h2>
         <div className="grade-dinos">
           {destaques.map((dino) => (
-            <article key={dino.id} className="card-dino">
+            <article key={dino.id} className={`card-dino ${Number(usuario?.favoritoId) === Number(dino.id) || Number(usuario?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}>
               <div
                 className="card-dino-foto"
                 style={
@@ -93,7 +103,9 @@ export default function Inicio() {
                     ? { backgroundImage: `url(${dino.fotoUrl})` }
                     : undefined
                 }
-              />
+              >
+                <BotaoFavorito dinoId={dino.id} />
+              </div>
               <div className="card-dino-corpo">
                 <h3>{dino.nome}</h3>
                 <p className="cientifico">{dino.nomeCientifico}</p>
@@ -120,11 +132,15 @@ export default function Inicio() {
           <p>Nenhum destaque ainda. Suba o backend para carregar a lista.</p>
         ) : null}
         <div className="destaques-acao">
+          <a href="#mapa" className="botao">
+            Ver mapa-múndi
+          </a>
           <Link to="/dinossauros" className="botao botao-fantasma">
             Ver todos os dinossauros
           </Link>
         </div>
       </section>
+      <MapaMundial pontos={pontosMapa} />
     </div>
   )
 }
