@@ -17,6 +17,10 @@ export function listarDestaques() {
   return request('/dinossauros/destaques')
 }
 
+export function listarMapa() {
+  return request('/dinossauros/mapa')
+}
+
 export function getLinhaDoTempo() {
   return request('/linha-do-tempo')
 }

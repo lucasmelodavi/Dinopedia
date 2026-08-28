@@ -183,7 +183,7 @@ export default function CadastroDinossauro() {
         /* o header atualiza no próximo carregamento */
       }
 
-      navigate(`/dinossauros/${dinoId}`)
+      navigate('/')
     } catch (falha) {
       setErro(falha.message || 'Não foi possível salvar o dinossauro.')
     } finally {
@@ -308,7 +308,15 @@ export default function CadastroDinossauro() {
 
         <label className="campo">
           Região
-          <input name="regiao" value={ficha.regiao} onChange={handleChange} />
+          <input
+            name="regiao"
+            value={ficha.regiao}
+            onChange={handleChange}
+            placeholder="Ex: Argentina, Montana, Deserto de Gobi"
+          />
+          <small className="campo-ajuda">
+            O mapa da home coloca o balão sozinho neste lugar, com a foto da ficha.
+          </small>
         </label>
 
         <label className="campo">

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BotaoFavorito from '../components/BotaoFavorito'
+import MapaMundial from '../components/MapaMundial'
 import { useAuth } from '../context/AuthContext'
-import { listarDestaques, listarDinossauros } from '../services/dinosaurService'
+import { pontosDasFichas } from '../constants/geocodigo'
+import { listarDestaques, listarDinossauros, listarMapa } from '../services/dinosaurService'
 
 const PERIODOS_VISUAL = [
   { nome: 'Triássico', anos: '252 - 201 M.A.', cor: 'triassico' },
@@ -13,25 +15,30 @@ const PERIODOS_VISUAL = [
 export default function Inicio() {
   const { usuario } = useAuth()
   const [destaques, setDestaques] = useState([])
+  const [pontosMapa, setPontosMapa] = useState([])
 
   useEffect(() => {
     let ativo = true
 
     async function carregar() {
       try {
-        const [destaqueRes, listaRes] = await Promise.all([
+        const [destaqueRes, listaRes, mapaRes] = await Promise.all([
           listarDestaques().catch(() => ({ data: [] })),
-          listarDinossauros({ limit: 8 }).catch(() => ({ data: [] })),
+          listarDinossauros({ limit: 500, sort: 'id' }).catch(() => ({ data: [] })),
+          listarMapa().catch(() => ({ data: [] })),
         ])
         if (!ativo) return
 
+        const todas = listaRes.data || []
         const destaquesLista = destaqueRes.data?.length
           ? destaqueRes.data
-          : listaRes.data || []
+          : todas.slice(0, 8)
         setDestaques(destaquesLista.slice(0, 4))
+        setPontosMapa(pontosDasFichas(todas, mapaRes.data || []))
       } catch {
         if (ativo) {
           setDestaques([])
+          setPontosMapa([])
         }
       }
     }
@@ -130,6 +137,7 @@ export default function Inicio() {
           </Link>
         </div>
       </section>
+      <MapaMundial pontos={pontosMapa} />
     </div>
   )
 }

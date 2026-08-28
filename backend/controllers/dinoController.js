@@ -88,6 +88,16 @@ const listarDestaques = async (req, res) => {
     }
 };
 
+const listarMapa = async (req, res) => {
+    try {
+        const data = await Dinosaur.listarMapa();
+        res.json({ data });
+    } catch (erro) {
+        console.error('Mapa', erro.message);
+        res.status(500).json({ erro: 'Erro ao montar o mapa' });
+    }
+};
+
 const linhaDoTempo = async (req, res) => {
     try {
         const { PERIODOS } = require('../config/constants');
@@ -292,6 +302,7 @@ module.exports = {
     criarDinossauro,
     listarDinossauros,
     listarDestaques,
+    listarMapa,
     linhaDoTempo,
     buscarDinossauro,
     atualizarDinossauro,

@@ -271,6 +271,11 @@ a {
   outline-offset: 1px;
 }
 
+.campo-ajuda {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .busca-form {
   max-width: 1100px;
   display: grid;
@@ -505,7 +510,7 @@ a {
 }
 
 .destaques {
-  padding: 56px 40px 80px;
+  padding: 56px 40px 24px;
   background: #0c0f0c;
 }
 
@@ -589,6 +594,117 @@ a {
   display: flex;
   justify-content: center;
   margin-top: 28px;
+}
+
+.mapa-secao {
+  padding: 12px 40px 80px;
+  background: #0c0f0c;
+}
+
+.mapa-secao h2 {
+  margin: 0 0 8px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mapa-ajuda {
+  margin: 0 auto 22px;
+  max-width: 640px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.mapa-mundi {
+  position: relative;
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #0a120e;
+}
+
+.mapa-mundi-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mapa-vazio {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(8, 12, 8, 0.72);
+  color: var(--muted);
+  text-align: center;
+}
+
+.mapa-balao {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  transform: translate(-50%, -100%);
+  color: #fff;
+}
+
+.mapa-balao-foto {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #e8b040;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 30%, #4d7a32, #1a2a14 70%);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.mapa-balao::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-top-color: #e8b040;
+  margin-top: -1px;
+}
+
+.mapa-balao strong {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(8, 12, 8, 0.9);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mapa-balao:hover,
+.mapa-balao:focus-visible {
+  z-index: 5;
+}
+
+.mapa-balao:hover .mapa-balao-foto,
+.mapa-balao:focus-visible .mapa-balao-foto {
+  transform: scale(1.12);
+}
+
+.mapa-balao:hover strong,
+.mapa-balao:focus-visible strong {
+  opacity: 1;
 }
 
 .rodape {
@@ -2134,7 +2250,16 @@ a {
   }
 
   .destaques {
-    padding: 36px 18px 56px;
+    padding: 36px 18px 16px;
+  }
+
+  .mapa-secao {
+    padding: 8px 18px 56px;
+  }
+
+  .mapa-balao-foto {
+    width: 30px;
+    height: 30px;
   }
 
   .perfil-resumo,
