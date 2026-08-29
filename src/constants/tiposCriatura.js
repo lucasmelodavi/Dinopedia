@@ -1,4 +1,4 @@
-import { FAMILIAS } from '../constants'
+import { FAMILIAS } from './familias'
 
 export const TIPOS_CRIATURA = [
   {

@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 const pool = require('../db/pool');
 const {
@@ -17,8 +19,10 @@ const userRoutes = require('./userRoutes');
 const dinoController = require('../controllers/dinoController');
 const config = require('../config');
 
+const sitePronto = fs.existsSync(path.join(__dirname, '..', '..', 'dist', 'index.html'));
+
 router.get('/', (req, res, next) => {
-    if (String(req.headers.accept || '').includes('text/html')) {
+    if (sitePronto || String(req.headers.accept || '').includes('text/html')) {
         return next();
     }
 

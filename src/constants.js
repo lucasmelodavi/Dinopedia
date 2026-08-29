@@ -29,21 +29,7 @@ export const CATEGORIAS_TOPICO = [
 ]
 
 export { TIPOS_CRIATURA, configTipo, rotuloTipo, fichaVazia, montarPayload, fichaDoServidor } from './constants/tiposCriatura'
-
-export const FAMILIAS = [
-  'Theropoda',
-  'Spinosauridae',
-  'Abelisauridae',
-  'Herrerasauridae',
-  'Plateosauridae',
-  'Sauropoda',
-  'Titanosauria',
-  'Ceratopsia',
-  'Ankylosauria',
-  'Stegosauria',
-  'Hadrosauridae',
-  'Ornithischia',
-]
+export { FAMILIAS } from './constants/familias'
 
 export const EMAIL_CRIADOR = 'lucasmelodavi425@gmail.com'
 
