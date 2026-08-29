@@ -1,8 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import BotaoFavorito from '../components/BotaoFavorito'
+import { configTipo } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { buscarDinossauro } from '../services/dinosaurService'
+
+function BadgeTipo({ tipo }) {
+  const cfg = configTipo(tipo || 'dinossauro')
+  return (
+    <span className={`badge-tipo badge-tipo--${tipo || 'dinossauro'}`}>
+      {cfg.simbolo} {cfg.nome}
+    </span>
+  )
+}
+
+function CampoFicha({ rotulo, valor }) {
+  if (!valor && valor !== 0) return null
+  return (
+    <p>
+      <strong>{rotulo}:</strong> {valor}
+    </p>
+  )
+}
 
 export default function DinossauroDetalhe() {
   const { id } = useParams()
@@ -33,6 +52,9 @@ export default function DinossauroDetalhe() {
     )
   }
 
+  const cfg = configTipo(dino.tipo || 'dinossauro')
+  const attrs = dino.atributos || {}
+
   return (
     <section className="pagina">
       <article className="ficha">
@@ -43,14 +65,35 @@ export default function DinossauroDetalhe() {
           <BotaoFavorito dinoId={dino.id} />
         </div>
         <div>
+          <BadgeTipo tipo={dino.tipo} />
           <p className="cientifico">{dino.periodo}</p>
           <h1>{dino.nome}</h1>
           <p className="cientifico">{dino.nomeCientifico}</p>
-          <p>Período: {dino.periodo}</p>
-          <p>Dieta: {dino.dieta}</p>
-          {dino.familia ? <p>Família: {dino.familia}</p> : null}
-          {dino.comprimento ? <p>Comprimento: {dino.comprimento} m</p> : null}
-          {dino.regiao ? <p>Região: {dino.regiao}</p> : null}
+          <CampoFicha rotulo="Período" valor={dino.periodo} />
+          <CampoFicha rotulo="Dieta" valor={dino.dieta} />
+          <CampoFicha rotulo={cfg.rotuloGrupo} valor={dino.familia} />
+          {dino.tipo === 'outro' ? (
+            <CampoFicha rotulo="Tamanho" valor={attrs.tamanho} />
+          ) : (
+            <CampoFicha rotulo="Comprimento" valor={dino.comprimento ? `${dino.comprimento} m` : null} />
+          )}
+          {dino.tipo === 'pterossauro' ? (
+            <>
+              <CampoFicha rotulo="Envergura" valor={attrs.envergura ? `${attrs.envergura} m` : null} />
+              <CampoFicha rotulo="Modo de voo" valor={attrs.modoVoo} />
+            </>
+          ) : null}
+          {dino.tipo === 'reptil_marinho' ? (
+            <CampoFicha rotulo="Habitat" valor={attrs.habitat} />
+          ) : null}
+          {dino.tipo === 'mamifero' ? (
+            <>
+              <CampoFicha rotulo="Peso" valor={attrs.peso ? `${attrs.peso} kg` : null} />
+              <CampoFicha rotulo="Pelagem" valor={attrs.pelagem} />
+            </>
+          ) : null}
+          <CampoFicha rotulo="Região" valor={dino.regiao} />
+          <CampoFicha rotulo="Ano da descoberta" valor={dino.anoDescoberta} />
           {dino.autorNome ? (
             <p className="dino-autor">
               Feito por{' '}

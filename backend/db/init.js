@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('./pool');
-const { PERIODOS } = require('../config/constants');
+const { PERIODOS_TODOS } = require('../config/constants');
 const { seed } = require('./seed');
 
 function splitStatements(sql) {
@@ -41,7 +41,7 @@ async function initDb() {
         await pool.query(statement);
     }
 
-    for (const nome of PERIODOS) {
+    for (const nome of PERIODOS_TODOS) {
         await pool.query(
             'INSERT INTO periodos (nome) VALUES ($1) ON CONFLICT (nome) DO NOTHING',
             [nome]

@@ -168,7 +168,7 @@ export default function IndiceLateral({ aberto, onMudar }) {
 
   const conta = autenticado
     ? [
-        { to: '/dinossauros/novo', label: 'Adicionar dinossauro', icon: 'mais' },
+        { to: '/dinossauros/novo', label: 'Adicionar ficha', icon: 'mais' },
         { to: '/perfil#favorito', label: 'Favorito', icon: 'coracao' },
         { to: '/perfil#conquistas', label: 'Conquistas', icon: 'trofeu' },
         { to: '/perfil#enfeites', label: 'Enfeites', icon: 'estrela', ativo: false },

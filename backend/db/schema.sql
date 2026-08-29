@@ -64,6 +64,8 @@ ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS enfeites TEXT;
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS favorito_id INTEGER REFERENCES dinossauros(id) ON DELETE SET NULL;
 ALTER TABLE dinossauros ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
 ALTER TABLE dinossauros ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+ALTER TABLE dinossauros ADD COLUMN IF NOT EXISTS tipo VARCHAR(30) NOT NULL DEFAULT 'dinossauro';
+ALTER TABLE dinossauros ADD COLUMN IF NOT EXISTS atributos JSONB NOT NULL DEFAULT '{}';
 
 CREATE TABLE IF NOT EXISTS seguidores (
     seguidor_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -101,5 +103,10 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_pontos ON usuarios(pontos DESC);
 INSERT INTO periodos (nome) VALUES
     ('Triássico'),
     ('Jurássico'),
-    ('Cretáceo')
+    ('Cretáceo'),
+    ('Paleógeno'),
+    ('Neógeno'),
+    ('Pleistoceno'),
+    ('Holoceno'),
+    ('Outro')
 ON CONFLICT (nome) DO NOTHING;

@@ -1,15 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import BotaoFavorito from '../components/BotaoFavorito'
-import { DIETAS, FAMILIAS, PERIODOS } from '../constants'
+import { DIETAS, PERIODOS_TODOS, TIPOS_CRIATURA, configTipo } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { listarDinossauros } from '../services/dinosaurService'
 
 const FILTROS_VAZIOS = {
   nome: '',
+  tipo: '',
   periodo: '',
   dieta: '',
   familia: '',
+}
+
+function BadgeTipo({ tipo }) {
+  const cfg = configTipo(tipo || 'dinossauro')
+  return (
+    <span className={`badge-tipo badge-tipo--${tipo || 'dinossauro'}`}>
+      {cfg.simbolo} {cfg.nome}
+    </span>
+  )
 }
 
 export default function Catalogo() {
@@ -35,7 +45,14 @@ export default function Catalogo() {
       setCarregando(true)
       setErro('')
       try {
-        const resultado = await listarDinossauros(busca)
+        const params = { ...busca }
+        if (!params.tipo) delete params.tipo
+        if (!params.periodo) delete params.periodo
+        if (!params.dieta) delete params.dieta
+        if (!params.familia) delete params.familia
+        if (!params.nome) delete params.nome
+
+        const resultado = await listarDinossauros(params)
         if (!ativo) return
         setDinossauros(resultado.data || [])
       } catch (falha) {
@@ -44,7 +61,7 @@ export default function Catalogo() {
         setErro(
           falha.message === 'Failed to fetch' || falha.message?.includes('fetch')
             ? 'Não foi possível buscar. Suba o backend com node app.js.'
-            : falha.message || 'Falha ao buscar dinossauros.',
+            : falha.message || 'Falha ao buscar fichas.',
         )
       } finally {
         if (ativo) setCarregando(false)
@@ -74,11 +91,11 @@ export default function Catalogo() {
 
   return (
     <section className="pagina">
-      <h1>Dinossauros</h1>
-      <p>Busque pelo nome ou filtre por período, dieta e família.</p>
+      <h1>Catálogo de criaturas</h1>
+      <p>Busque pelo nome ou filtre por tipo, período e dieta.</p>
       <p>
         <Link to="/dinossauros/novo" className="botao">
-          Adicionar dinossauro
+          Adicionar ficha
         </Link>
       </p>
 
@@ -95,10 +112,22 @@ export default function Catalogo() {
         </label>
 
         <label className="campo">
+          Tipo
+          <select name="tipo" value={filtros.tipo} onChange={handleChange}>
+            <option value="">Todos</option>
+            {TIPOS_CRIATURA.map((tipo) => (
+              <option key={tipo.id} value={tipo.id}>
+                {tipo.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="campo">
           Período
           <select name="periodo" value={filtros.periodo} onChange={handleChange}>
             <option value="">Todos</option>
-            {PERIODOS.map((item) => (
+            {PERIODOS_TODOS.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -111,18 +140,6 @@ export default function Catalogo() {
           <select name="dieta" value={filtros.dieta} onChange={handleChange}>
             <option value="">Todas</option>
             {DIETAS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="campo">
-          Família
-          <select name="familia" value={filtros.familia} onChange={handleChange}>
-            <option value="">Todas</option>
-            {FAMILIAS.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -144,12 +161,15 @@ export default function Catalogo() {
       {carregando ? <p>Buscando...</p> : null}
 
       {!carregando && !erro && dinossauros.length === 0 ? (
-        <p>Nenhum dinossauro encontrado.</p>
+        <p>Nenhuma ficha encontrada.</p>
       ) : null}
 
       <div className="grade-dinos catalogo-grade">
         {dinossauros.map((dino) => (
-          <article key={dino.id} className={`card-dino ${Number(usuario?.favoritoId) === Number(dino.id) || Number(usuario?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}>
+          <article
+            key={dino.id}
+            className={`card-dino ${Number(usuario?.favoritoId) === Number(dino.id) || Number(usuario?.favorito?.id) === Number(dino.id) ? 'is-favorito' : ''}`}
+          >
             <div
               className="card-dino-foto"
               style={dino.fotoUrl ? { backgroundImage: `url(${dino.fotoUrl})` } : undefined}
@@ -157,6 +177,7 @@ export default function Catalogo() {
               <BotaoFavorito dinoId={dino.id} />
             </div>
             <div className="card-dino-corpo">
+              <BadgeTipo tipo={dino.tipo} />
               <h3>{dino.nome}</h3>
               <p className="cientifico">{dino.nomeCientifico}</p>
               <p>Período: {dino.periodo}</p>

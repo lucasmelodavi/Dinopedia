@@ -18,8 +18,10 @@ const CAMPOS_EDICAO = [
     'destaque'
 ];
 
+
 function dadosDaFicha(body) {
     return {
+        tipo: body.tipo,
         nome: body.nome,
         nomeCientifico: body.nomeCientifico,
         periodo: body.periodo,
@@ -29,7 +31,8 @@ function dadosDaFicha(body) {
         comprimento: body.comprimento,
         regiao: body.regiao,
         anoDescoberta: body.anoDescoberta,
-        destaque: body.destaque
+        destaque: body.destaque,
+        atributos: body.atributos
     };
 }
 

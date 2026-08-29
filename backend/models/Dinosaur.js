@@ -2,11 +2,18 @@ const pool = require('../db/pool');
 const config = require('../config');
 const {
     DIETAS,
-    FAMILIAS,
+    PERIODOS_TODOS,
     normalizarDieta,
     normalizarPeriodo,
     semAcento
 } = require('../config/constants');
+const {
+    TIPOS_IDS,
+    normalizarTipo,
+    configTipo,
+    validarGrupo,
+    validarAtributos
+} = require('../config/tiposCriatura');
 const { geocodificar, espalhar } = require('../config/geocodigo');
 
 const SORT_MAP = {
@@ -14,6 +21,7 @@ const SORT_MAP = {
     periodo: 'p.nome',
     dieta: 'd.dieta',
     familia: 'd.familia',
+    tipo: 'd.tipo',
     nomeCientifico: 'd.nome_cientifico',
     anoDescoberta: 'd.ano_descoberta',
     id: 'd.id'
@@ -25,14 +33,25 @@ class Dinosaur {
     static mapear(row) {
         if (!row) return null;
 
+        let atributos = row.atributos || {};
+        if (typeof atributos === 'string') {
+            try {
+                atributos = JSON.parse(atributos);
+            } catch {
+                atributos = {};
+            }
+        }
+
         return {
             id: row.id,
+            tipo: row.tipo || 'dinossauro',
             nome: row.nome,
             nomeCientifico: row.nome_cientifico,
             periodo: row.periodo_nome,
             periodoId: row.periodo_id,
             dieta: row.dieta,
             familia: row.familia,
+            atributos,
             descricao: row.descricao,
             comprimento: row.comprimento !== null ? Number(row.comprimento) : null,
             regiao: row.regiao,
@@ -49,34 +68,39 @@ class Dinosaur {
         };
     }
 
-    static async buscarPeriodoId(nomePeriodo) {
+    static async buscarPeriodoId(nomePeriodo, tipo = 'dinossauro') {
         const periodo = normalizarPeriodo(nomePeriodo);
+        const cfg = configTipo(tipo);
+        const periodoValido = cfg.periodos.find(
+            (item) => semAcento(item) === semAcento(periodo)
+        );
+
+        if (!periodoValido && periodo !== 'Outro') {
+            throw new Error(`Período inválido para ${cfg.nome}. Opções: ${cfg.periodos.join(', ')}`);
+        }
+
         const resultado = await pool.query('SELECT id, nome FROM periodos');
         const encontrado = resultado.rows.find(
             (row) => semAcento(row.nome) === semAcento(periodo)
         );
 
         if (!encontrado) {
-            throw new Error('Período inválido. Opções: Triássico, Jurássico, Cretáceo');
+            throw new Error(`Período inválido. Opções: ${PERIODOS_TODOS.join(', ')}`);
         }
 
         return encontrado;
     }
 
-    static validarDieta(dieta) {
+    static validarDieta(dieta, tipo = 'dinossauro') {
+        const cfg = configTipo(tipo);
+        if (!dieta && !cfg.dietaObrigatoria) {
+            return 'Não informado';
+        }
         const normalizada = normalizarDieta(dieta);
         if (!DIETAS.includes(normalizada)) {
             throw new Error(`Dieta inválida. Opções: ${DIETAS.join(', ')}`);
         }
         return normalizada;
-    }
-
-    static validarFamilia(familia) {
-        if (!familia) return null;
-        if (!FAMILIAS.includes(familia)) {
-            throw new Error(`Família inválida. Opções: ${FAMILIAS.join(', ')}`);
-        }
-        return familia;
     }
 
     static async garantirEstrutura() {
@@ -88,6 +112,21 @@ class Dinosaur {
             `ALTER TABLE dinossauros
              ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION`
         );
+        await pool.query(
+            `ALTER TABLE dinossauros
+             ADD COLUMN IF NOT EXISTS tipo VARCHAR(30) NOT NULL DEFAULT 'dinossauro'`
+        );
+        await pool.query(
+            `ALTER TABLE dinossauros
+             ADD COLUMN IF NOT EXISTS atributos JSONB NOT NULL DEFAULT '{}'`
+        );
+
+        for (const nome of PERIODOS_TODOS) {
+            await pool.query(
+                'INSERT INTO periodos (nome) VALUES ($1) ON CONFLICT (nome) DO NOTHING',
+                [nome]
+            );
+        }
     }
 
     static async aplicarCoordenadas(id, regiao, nome) {
@@ -164,12 +203,13 @@ class Dinosaur {
         const peloNome = nomeChave && Dinosaur.chaveNome(repetido.nome) === nomeChave;
         throw new Error(
             peloNome
-                ? `Este dinossauro já está na DinoPédia: ${repetido.nome}. Abra a ficha para editar.`
-                : `Já existe um dinossauro com o nome científico ${repetido.nome_cientifico}. Abra a ficha para editar.`
+                ? `Esta ficha já está na DinoPédia: ${repetido.nome}. Abra a ficha para editar.`
+                : `Já existe uma ficha com o nome científico ${repetido.nome_cientifico}. Abra a ficha para editar.`
         );
     }
 
     static async criar({
+        tipo,
         nome,
         nomeCientifico,
         periodo,
@@ -180,29 +220,34 @@ class Dinosaur {
         regiao,
         anoDescoberta,
         destaque,
+        atributos,
         usuarioId
     }) {
-        if (!nome || !nomeCientifico || !periodo || !dieta || !descricao || !usuarioId) {
+        const tipoNormalizado = normalizarTipo(tipo || 'dinossauro');
+
+        if (!nome || !nomeCientifico || !periodo || !descricao || !usuarioId) {
             throw new Error(
-                'Nome, nome científico, período, dieta, descrição e usuário são obrigatórios'
+                'Nome, nome científico, período, descrição e usuário são obrigatórios'
             );
         }
 
-        const dietaNormalizada = Dinosaur.validarDieta(dieta);
-        const familiaNormalizada = Dinosaur.validarFamilia(familia);
-        const periodoRow = await Dinosaur.buscarPeriodoId(periodo);
+        const dietaNormalizada = Dinosaur.validarDieta(dieta, tipoNormalizado);
+        const familiaNormalizada = validarGrupo(tipoNormalizado, familia);
+        const atributosNormalizados = validarAtributos(tipoNormalizado, atributos || {});
+        const periodoRow = await Dinosaur.buscarPeriodoId(periodo, tipoNormalizado);
         await Dinosaur.garantirUnico({ nome, nomeCientifico });
         await Dinosaur.garantirEstrutura();
         const ponto = await geocodificar(regiao, nome);
 
         const resultado = await pool.query(
             `INSERT INTO dinossauros (
-                nome, nome_cientifico, periodo_id, dieta, descricao,
+                tipo, nome, nome_cientifico, periodo_id, dieta, descricao,
                 comprimento, regiao, ano_descoberta, familia, destaque, criado_por,
-                latitude, longitude
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                latitude, longitude, atributos
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
              RETURNING *`,
             [
+                tipoNormalizado,
                 nome,
                 nomeCientifico,
                 periodoRow.id,
@@ -215,7 +260,8 @@ class Dinosaur {
                 Boolean(destaque),
                 usuarioId,
                 ponto ? ponto.lat : null,
-                ponto ? ponto.lng : null
+                ponto ? ponto.lng : null,
+                JSON.stringify(atributosNormalizados)
             ]
         );
 
@@ -238,9 +284,10 @@ class Dinosaur {
     static async atualizar(id, dados) {
         const atual = await Dinosaur.buscarPorId(id);
         if (!atual) {
-            throw new Error('Dinossauro não encontrado');
+            throw new Error('Ficha não encontrada');
         }
 
+        const tipoAtual = atual.tipo || 'dinossauro';
         const proximo = { ...atual };
 
         if (dados.nome !== undefined) proximo.nome = dados.nome;
@@ -253,25 +300,31 @@ class Dinosaur {
         if (dados.destaque !== undefined) proximo.destaque = Boolean(dados.destaque);
 
         if (dados.dieta !== undefined) {
-            proximo.dieta = Dinosaur.validarDieta(dados.dieta);
+            proximo.dieta = Dinosaur.validarDieta(dados.dieta, tipoAtual);
         }
 
         if (dados.familia !== undefined) {
-            proximo.familia = Dinosaur.validarFamilia(dados.familia);
+            proximo.familia = validarGrupo(tipoAtual, dados.familia);
+        }
+
+        if (dados.atributos !== undefined) {
+            proximo.atributos = validarAtributos(tipoAtual, dados.atributos || {});
         }
 
         let periodoId = atual.periodoId;
-        let periodoNome = atual.periodo;
         if (dados.periodo !== undefined) {
-            const periodoRow = await Dinosaur.buscarPeriodoId(dados.periodo);
+            const periodoRow = await Dinosaur.buscarPeriodoId(dados.periodo, tipoAtual);
             periodoId = periodoRow.id;
-            periodoNome = periodoRow.nome;
-            proximo.periodo = periodoNome;
+            proximo.periodo = periodoRow.nome;
             proximo.periodoId = periodoId;
         }
 
-        if (!proximo.nome || !proximo.nomeCientifico || !proximo.dieta || !proximo.descricao) {
-            throw new Error('Nome, nome científico, dieta e descrição não podem ficar vazios');
+        if (!proximo.nome || !proximo.nomeCientifico || !proximo.descricao) {
+            throw new Error('Nome, nome científico e descrição não podem ficar vazios');
+        }
+
+        if (configTipo(tipoAtual).dietaObrigatoria && !proximo.dieta) {
+            throw new Error('Dieta é obrigatória para este tipo de criatura');
         }
 
         await Dinosaur.garantirUnico({
@@ -306,14 +359,15 @@ class Dinosaur {
                 destaque = $11,
                 latitude = $12,
                 longitude = $13,
+                atributos = $14,
                 updated_at = NOW()
-             WHERE id = $14
+             WHERE id = $15
              RETURNING *`,
             [
                 proximo.nome,
                 proximo.nomeCientifico,
                 periodoId,
-                proximo.dieta,
+                proximo.dieta || 'Não informado',
                 proximo.descricao,
                 proximo.comprimento ?? null,
                 proximo.regiao ?? null,
@@ -323,6 +377,7 @@ class Dinosaur {
                 Boolean(proximo.destaque),
                 latitude,
                 longitude,
+                JSON.stringify(proximo.atributos || {}),
                 id
             ]
         );
@@ -339,7 +394,7 @@ class Dinosaur {
         );
 
         if (!resultado.rows[0]) {
-            throw new Error('Dinossauro não encontrado');
+            throw new Error('Ficha não encontrada');
         }
 
         return true;
@@ -352,6 +407,14 @@ class Dinosaur {
         if (filtros.nome) {
             valores.push(`%${filtros.nome}%`);
             condicoes.push(`d.nome ILIKE $${valores.length}`);
+        }
+
+        if (filtros.tipo) {
+            const chave = String(filtros.tipo).trim().toLowerCase();
+            if (TIPOS_IDS.includes(chave)) {
+                valores.push(chave);
+                condicoes.push(`d.tipo = $${valores.length}`);
+            }
         }
 
         if (filtros.periodo) {

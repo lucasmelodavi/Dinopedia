@@ -12,7 +12,7 @@ export default function Footer() {
           <h3>Explorar</h3>
           <Link to="/linha-do-tempo">Linha do Tempo</Link>
           <Link to="/dinossauros">Dinossauros</Link>
-          <Link to="/dinossauros/novo">Adicionar dinossauro</Link>
+          <Link to="/dinossauros/novo">Adicionar ficha</Link>
         </div>
         <div>
           <h3>Comunidade</h3>

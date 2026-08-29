@@ -2446,3 +2446,69 @@ a {
     padding: 20px 0 56px;
   }
 }
+
+.badge-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line);
+  background: rgba(94, 163, 58, 0.12);
+  color: var(--green-2);
+}
+
+.badge-tipo--pterossauro {
+  background: rgba(90, 160, 220, 0.14);
+  color: #8ec5ff;
+}
+
+.badge-tipo--reptil_marinho {
+  background: rgba(60, 140, 200, 0.14);
+  color: #7ec8e8;
+}
+
+.badge-tipo--mamifero {
+  background: rgba(180, 130, 80, 0.16);
+  color: #e8c08a;
+}
+
+.badge-tipo--outro {
+  background: rgba(160, 120, 200, 0.14);
+  color: #c9a8ef;
+}
+
+.grade-tipos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.cartao-tipo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.cartao-tipo:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+}
+
+.cartao-tipo-simbolo {
+  font-size: 2rem;
+  line-height: 1;
+}

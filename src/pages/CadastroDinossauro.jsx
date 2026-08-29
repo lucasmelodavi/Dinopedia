@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CATEGORIAS_TOPICO, DIETAS, FAMILIAS, PERIODOS } from '../constants'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  TIPOS_CRIATURA,
+  configTipo,
+  fichaDoServidor,
+  fichaVazia,
+  montarPayload,
+} from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { getPerfil } from '../services/authService'
 import {
@@ -13,62 +19,52 @@ import {
   enviarFoto,
 } from '../services/dinosaurService'
 
-const VAZIO = {
-  nome: '',
-  nomeCientifico: '',
-  periodo: 'Cretáceo',
-  dieta: 'Carnívoro',
-  familia: '',
-  descricao: '',
-  comprimento: '',
-  regiao: '',
-  anoDescoberta: '',
-  destaque: false,
-}
-
-function novaCuriosidade() {
+function novaCuriosidade(tipo) {
+  const cfg = configTipo(tipo)
   return {
     localId: `novo-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     id: null,
-    categoria: 'Curiosidade',
+    categoria: cfg.topicos[cfg.topicos.length - 1] || 'Curiosidade',
     texto: '',
   }
 }
 
 export default function CadastroDinossauro() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const editando = Boolean(id)
+  const tipoUrl = searchParams.get('tipo') || ''
   const navigate = useNavigate()
   const { autenticado, carregando, atualizarUsuario } = useAuth()
-  const [ficha, setFicha] = useState(VAZIO)
+  const [ficha, setFicha] = useState(fichaVazia('dinossauro'))
+  const [tipoEscolhido, setTipoEscolhido] = useState(editando || Boolean(tipoUrl))
   const [foto, setFoto] = useState(null)
   const [preview, setPreview] = useState('')
-  const [topicos, setTopicos] = useState([novaCuriosidade()])
+  const [topicos, setTopicos] = useState([novaCuriosidade('dinossauro')])
   const [topicosRemovidos, setTopicosRemovidos] = useState([])
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
 
+  const cfg = configTipo(ficha.tipo)
+
   useEffect(() => {
-    if (!editando) {
-      setTopicos([novaCuriosidade()])
-      setTopicosRemovidos([])
-      return
+    if (editando) return
+
+    if (tipoUrl && TIPOS_CRIATURA.some((tipo) => tipo.id === tipoUrl)) {
+      setFicha(fichaVazia(tipoUrl))
+      setTopicos([novaCuriosidade(tipoUrl)])
+      setTipoEscolhido(true)
     }
+  }, [editando, tipoUrl])
+
+  useEffect(() => {
+    if (!editando) return
 
     buscarDinossauro(id)
       .then((dino) => {
-        setFicha({
-          nome: dino.nome || '',
-          nomeCientifico: dino.nomeCientifico || '',
-          periodo: dino.periodo || 'Cretáceo',
-          dieta: dino.dieta || 'Carnívoro',
-          familia: dino.familia || '',
-          descricao: dino.descricao || '',
-          comprimento: dino.comprimento ?? '',
-          regiao: dino.regiao || '',
-          anoDescoberta: dino.anoDescoberta ?? '',
-          destaque: Boolean(dino.destaque),
-        })
+        const carregada = fichaDoServidor(dino)
+        setFicha(carregada)
+        setTipoEscolhido(true)
         if (dino.fotoUrl) setPreview(dino.fotoUrl)
         const existentes = (dino.topicos || []).map((topico) => ({
           localId: `salvo-${topico.id}`,
@@ -76,11 +72,18 @@ export default function CadastroDinossauro() {
           categoria: topico.categoria || 'Curiosidade',
           texto: topico.texto || '',
         }))
-        setTopicos(existentes.length ? existentes : [novaCuriosidade()])
+        setTopicos(existentes.length ? existentes : [novaCuriosidade(carregada.tipo)])
         setTopicosRemovidos([])
       })
       .catch((falha) => setErro(falha.message || 'Não foi possível carregar a ficha.'))
   }, [editando, id])
+
+  function escolherTipo(tipoId) {
+    setFicha(fichaVazia(tipoId))
+    setTopicos([novaCuriosidade(tipoId)])
+    setTipoEscolhido(true)
+    navigate(`/dinossauros/novo?tipo=${tipoId}`, { replace: true })
+  }
 
   function handleChange(evento) {
     const { name, value, type, checked } = evento.target
@@ -103,7 +106,7 @@ export default function CadastroDinossauro() {
   }
 
   function adicionarCuriosidade() {
-    setTopicos((atual) => [...atual, novaCuriosidade()])
+    setTopicos((atual) => [...atual, novaCuriosidade(ficha.tipo)])
   }
 
   function removerCuriosidade(topico) {
@@ -112,7 +115,7 @@ export default function CadastroDinossauro() {
     }
     setTopicos((atual) => {
       const resto = atual.filter((item) => item.localId !== topico.localId)
-      return resto.length ? resto : [novaCuriosidade()]
+      return resto.length ? resto : [novaCuriosidade(ficha.tipo)]
     })
   }
 
@@ -121,18 +124,7 @@ export default function CadastroDinossauro() {
     setErro('')
     setEnviando(true)
 
-    const dados = {
-      nome: ficha.nome.trim(),
-      nomeCientifico: ficha.nomeCientifico.trim(),
-      periodo: ficha.periodo,
-      dieta: ficha.dieta,
-      familia: ficha.familia || undefined,
-      descricao: ficha.descricao.trim(),
-      comprimento: ficha.comprimento === '' ? undefined : Number(ficha.comprimento),
-      regiao: ficha.regiao.trim() || undefined,
-      anoDescoberta: ficha.anoDescoberta === '' ? undefined : Number(ficha.anoDescoberta),
-      destaque: ficha.destaque,
-    }
+    const dados = montarPayload(ficha)
 
     try {
       const incompletos = topicos.some((topico) => {
@@ -185,7 +177,7 @@ export default function CadastroDinossauro() {
 
       navigate('/')
     } catch (falha) {
-      setErro(falha.message || 'Não foi possível salvar o dinossauro.')
+      setErro(falha.message || 'Não foi possível salvar a ficha.')
     } finally {
       setEnviando(false)
     }
@@ -202,7 +194,7 @@ export default function CadastroDinossauro() {
   if (!autenticado) {
     return (
       <section className="pagina">
-        <h1>Adicionar dinossauro</h1>
+        <h1>Adicionar ficha</h1>
         <p>Entre na sua conta para criar uma ficha. O cadastro precisa estar confirmado no Gmail.</p>
         <div className="busca-acoes">
           <Link to="/login" className="botao">
@@ -216,20 +208,65 @@ export default function CadastroDinossauro() {
     )
   }
 
+  if (!editando && !tipoEscolhido) {
+    return (
+      <section className="pagina">
+        <h1>Que tipo de criatura?</h1>
+        <p>Escolha o tipo para abrir o formulário certo: dinossauro, pterossauro, réptil marinho, mamífero ou outro animal.</p>
+        <div className="grade-tipos">
+          {TIPOS_CRIATURA.map((tipo) => (
+            <button
+              key={tipo.id}
+              type="button"
+              className="cartao-tipo"
+              onClick={() => escolherTipo(tipo.id)}
+            >
+              <span className="cartao-tipo-simbolo" aria-hidden="true">
+                {tipo.simbolo}
+              </span>
+              <strong>{tipo.nome}</strong>
+            </button>
+          ))}
+        </div>
+        <p style={{ marginTop: 24 }}>
+          <Link to="/dinossauros" className="botao botao-fantasma">
+            Voltar ao catálogo
+          </Link>
+        </p>
+      </section>
+    )
+  }
+
   return (
     <section className="pagina">
-      <h1>{editando ? 'Editar dinossauro' : 'Adicionar dinossauro'}</h1>
+      <h1>
+        {editando ? `Editar ${cfg.nome.toLowerCase()}` : `Adicionar ${cfg.nome.toLowerCase()}`}
+      </h1>
       <p>
         {editando
-          ? 'Altere a ficha e as curiosidades: alimentação, fósseis, comportamento e aparência.'
-          : 'Preencha a ficha como nos cards da home: nome, nome científico, período, dieta e uma foto.'}
+          ? 'Altere a ficha e as curiosidades desta criatura.'
+          : 'Preencha os campos comuns e os específicos deste tipo de animal.'}
       </p>
+      {!editando ? (
+        <p>
+          <button
+            type="button"
+            className="botao botao-fantasma"
+            onClick={() => {
+              setTipoEscolhido(false)
+              navigate('/dinossauros/novo')
+            }}
+          >
+            Trocar tipo
+          </button>
+        </p>
+      ) : null}
 
       <form className="formulario form-ficha cartao" onSubmit={handleSubmit}>
         {erro ? <p className="alerta">{erro}</p> : null}
 
         <label className="campo campo-foto">
-          Foto do dinossauro
+          {cfg.rotuloFoto}
           {preview ? (
             <img src={preview} alt="Prévia" className="preview-foto" />
           ) : (
@@ -240,30 +277,18 @@ export default function CadastroDinossauro() {
 
         <label className="campo">
           Nome
-          <input
-            name="nome"
-            value={ficha.nome}
-            onChange={handleChange}
-            placeholder="Tiranossauro rex"
-            required
-          />
+          <input name="nome" value={ficha.nome} onChange={handleChange} required />
         </label>
 
         <label className="campo">
           Nome científico
-          <input
-            name="nomeCientifico"
-            value={ficha.nomeCientifico}
-            onChange={handleChange}
-            placeholder="Tyrannosaurus rex"
-            required
-          />
+          <input name="nomeCientifico" value={ficha.nomeCientifico} onChange={handleChange} required />
         </label>
 
         <label className="campo">
           Período
           <select name="periodo" value={ficha.periodo} onChange={handleChange} required>
-            {PERIODOS.map((item) => (
+            {cfg.periodos.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -271,22 +296,35 @@ export default function CadastroDinossauro() {
           </select>
         </label>
 
-        <label className="campo">
-          Dieta
-          <select name="dieta" value={ficha.dieta} onChange={handleChange} required>
-            {DIETAS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
+        {cfg.dietaObrigatoria ? (
+          <label className="campo">
+            Dieta
+            <select name="dieta" value={ficha.dieta} onChange={handleChange} required>
+              {['Carnívoro', 'Herbívoro', 'Onívoro'].map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <label className="campo">
+            Dieta (opcional)
+            <select name="dieta" value={ficha.dieta} onChange={handleChange}>
+              {['Não informado', 'Carnívoro', 'Herbívoro', 'Onívoro'].map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label className="campo">
-          Família
-          <select name="familia" value={ficha.familia} onChange={handleChange}>
+          {cfg.rotuloGrupo}
+          <select name="grupo" value={ficha.grupo} onChange={handleChange}>
             <option value="">Não informar</option>
-            {FAMILIAS.map((item) => (
+            {cfg.grupos.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -294,20 +332,92 @@ export default function CadastroDinossauro() {
           </select>
         </label>
 
-        <label className="campo">
-          Comprimento (metros)
-          <input
-            type="number"
-            name="comprimento"
-            min="0"
-            step="0.1"
-            value={ficha.comprimento}
-            onChange={handleChange}
-          />
-        </label>
+        {ficha.tipo === 'outro' ? (
+          <label className="campo">
+            {cfg.rotuloTamanho}
+            <input name="tamanho" value={ficha.tamanho} onChange={handleChange} placeholder="Ex: 2 m de comprimento" />
+          </label>
+        ) : (
+          <label className="campo">
+            {cfg.rotuloTamanho}
+            <input
+              type="number"
+              name="comprimento"
+              min="0"
+              step="0.1"
+              value={ficha.comprimento}
+              onChange={handleChange}
+            />
+          </label>
+        )}
+
+        {ficha.tipo === 'pterossauro' ? (
+          <>
+            <label className="campo">
+              Envergura (m)
+              <input
+                type="number"
+                name="envergura"
+                min="0"
+                step="0.1"
+                value={ficha.envergura}
+                onChange={handleChange}
+              />
+            </label>
+            <label className="campo">
+              Modo de voo
+              <select name="modoVoo" value={ficha.modoVoo} onChange={handleChange}>
+                {cfg.modosVoo.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : null}
+
+        {ficha.tipo === 'reptil_marinho' ? (
+          <label className="campo">
+            Habitat
+            <select name="habitat" value={ficha.habitat} onChange={handleChange}>
+              {cfg.habitats.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+
+        {ficha.tipo === 'mamifero' ? (
+          <>
+            <label className="campo">
+              Peso (kg)
+              <input
+                type="number"
+                name="peso"
+                min="0"
+                step="1"
+                value={ficha.peso}
+                onChange={handleChange}
+              />
+            </label>
+            <label className="campo">
+              Pelagem
+              <select name="pelagem" value={ficha.pelagem} onChange={handleChange}>
+                {cfg.pelagens.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        ) : null}
 
         <label className="campo">
-          Região
+          Região / local
           <input
             name="regiao"
             value={ficha.regiao}
@@ -315,39 +425,23 @@ export default function CadastroDinossauro() {
             placeholder="Ex: Argentina, Montana, Deserto de Gobi"
           />
           <small className="campo-ajuda">
-            O mapa da home coloca o balão sozinho neste lugar, com a foto da ficha.
+            O mapa da home coloca o balão neste lugar, com a foto da ficha.
           </small>
         </label>
 
         <label className="campo">
           Ano da descoberta
-          <input
-            type="number"
-            name="anoDescoberta"
-            value={ficha.anoDescoberta}
-            onChange={handleChange}
-          />
+          <input type="number" name="anoDescoberta" value={ficha.anoDescoberta} onChange={handleChange} />
         </label>
 
         <label className="campo campo-check">
-          <input
-            type="checkbox"
-            name="destaque"
-            checked={ficha.destaque}
-            onChange={handleChange}
-          />
-          Mostrar em “Dinossauros em destaque”
+          <input type="checkbox" name="destaque" checked={ficha.destaque} onChange={handleChange} />
+          Mostrar em destaque na home
         </label>
 
         <label className="campo campo-largo">
           Descrição
-          <textarea
-            name="descricao"
-            rows="4"
-            value={ficha.descricao}
-            onChange={handleChange}
-            required
-          />
+          <textarea name="descricao" rows="4" value={ficha.descricao} onChange={handleChange} required />
         </label>
 
         <div className="bloco-curiosidades">
@@ -358,9 +452,7 @@ export default function CadastroDinossauro() {
             </button>
           </div>
           <p className="bloco-curiosidades-ajuda">
-            {editando
-              ? 'Edite o texto, troque a categoria ou apague. Também dá para incluir uma nova.'
-              : 'Opcional. Mínimo de 20 caracteres para salvar cada curiosidade.'}
+            Opcional. Mínimo de 20 caracteres para salvar cada curiosidade.
           </p>
           {topicos.map((topico, indice) => (
             <div key={topico.localId} className="cartao-curiosidade">
@@ -370,7 +462,7 @@ export default function CadastroDinossauro() {
                   value={topico.categoria}
                   onChange={(evento) => handleTopico(topico.localId, 'categoria', evento.target.value)}
                 >
-                  {CATEGORIAS_TOPICO.map((item) => (
+                  {cfg.topicos.map((item) => (
                     <option key={item} value={item}>
                       {item}
                     </option>
@@ -390,7 +482,6 @@ export default function CadastroDinossauro() {
                   rows="3"
                   value={topico.texto}
                   onChange={(evento) => handleTopico(topico.localId, 'texto', evento.target.value)}
-                  placeholder="Uma curiosidade sobre fósseis, alimentação ou aparência."
                 />
               </label>
             </div>
@@ -399,7 +490,7 @@ export default function CadastroDinossauro() {
 
         <div className="busca-acoes campo-largo">
           <button className="botao" type="submit" disabled={enviando}>
-            {enviando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Criar dinossauro'}
+            {enviando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Criar ficha'}
           </button>
           <Link to="/dinossauros" className="botao botao-fantasma">
             Cancelar

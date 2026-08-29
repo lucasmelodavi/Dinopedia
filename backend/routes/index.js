@@ -3,10 +3,12 @@ const router = express.Router();
 const pool = require('../db/pool');
 const {
     PERIODOS,
+    PERIODOS_TODOS,
     DIETAS,
     CATEGORIAS_TOPICO,
     FAMILIAS
 } = require('../config/constants');
+const { catalogoPublico } = require('../config/tiposCriatura');
 const { REGRAS, NIVEIS } = require('../config/pontos');
 
 const authRoutes = require('./authRoutes');
@@ -82,9 +84,11 @@ router.get('/health', async (req, res) => {
 router.get('/opcoes', (req, res) => {
     res.json({
         periodos: PERIODOS,
+        periodosTodos: PERIODOS_TODOS,
         dietas: DIETAS,
         categoriasTopico: CATEGORIAS_TOPICO,
         familias: FAMILIAS,
+        tiposCriatura: catalogoPublico(),
         pontos: {
             regras: Object.entries(REGRAS).map(([tipo, regra]) => ({
                 tipo,

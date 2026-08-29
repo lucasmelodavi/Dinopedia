@@ -1,6 +1,15 @@
 export const PERIODOS = ['Triássico', 'Jurássico', 'Cretáceo']
 
-export const DIETAS = ['Carnívoro', 'Herbívoro', 'Onívoro']
+export const PERIODOS_TODOS = [
+  ...PERIODOS,
+  'Paleógeno',
+  'Neógeno',
+  'Pleistoceno',
+  'Holoceno',
+  'Outro',
+]
+
+export const DIETAS = ['Carnívoro', 'Herbívoro', 'Onívoro', 'Não informado']
 
 export const CATEGORIAS_TOPICO = [
   'Alimentação',
@@ -8,7 +17,18 @@ export const CATEGORIAS_TOPICO = [
   'Comportamento',
   'Curiosidade',
   'Aparência física',
+  'Voo',
+  'Habitat',
+  'Crânio e bico',
+  'Nadadeiras',
+  'Respiração',
+  'Presas',
+  'Extinção',
+  'Dentes e garras',
+  'Aparência',
 ]
+
+export { TIPOS_CRIATURA, configTipo, rotuloTipo, fichaVazia, montarPayload, fichaDoServidor } from './constants/tiposCriatura'
 
 export const FAMILIAS = [
   'Theropoda',

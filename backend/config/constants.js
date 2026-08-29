@@ -1,13 +1,24 @@
 const PERIODOS = ['Triássico', 'Jurássico', 'Cretáceo'];
+const PERIODOS_CENOZOICO = ['Paleógeno', 'Neógeno', 'Pleistoceno', 'Holoceno'];
+const PERIODOS_TODOS = [...PERIODOS, ...PERIODOS_CENOZOICO, 'Outro'];
 
-const DIETAS = ['Carnívoro', 'Herbívoro', 'Onívoro'];
+const DIETAS = ['Carnívoro', 'Herbívoro', 'Onívoro', 'Não informado'];
 
 const CATEGORIAS_TOPICO = [
     'Alimentação',
     'Fósseis',
     'Comportamento',
     'Curiosidade',
-    'Aparência física'
+    'Aparência física',
+    'Voo',
+    'Habitat',
+    'Crânio e bico',
+    'Nadadeiras',
+    'Respiração',
+    'Presas',
+    'Extinção',
+    'Dentes e garras',
+    'Aparência',
 ];
 
 const FAMILIAS = [
@@ -56,7 +67,7 @@ function normalizarDieta(valor) {
 }
 
 function normalizarPeriodo(valor) {
-    return encontrarLista(PERIODOS, valor);
+    return encontrarLista(PERIODOS_TODOS, valor);
 }
 
 function normalizarCategoria(valor) {
@@ -65,6 +76,8 @@ function normalizarCategoria(valor) {
 
 module.exports = {
     PERIODOS,
+    PERIODOS_CENOZOICO,
+    PERIODOS_TODOS,
     DIETAS,
     CATEGORIAS_TOPICO,
     FAMILIAS,
