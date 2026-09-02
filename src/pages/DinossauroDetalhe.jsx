@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import BotaoFavorito from '../components/BotaoFavorito'
+import BotoesPronuncia from '../components/BotoesPronuncia'
 import { configTipo } from '../constants'
 import { useAuth } from '../context/AuthContext'
 import { buscarDinossauro } from '../services/dinosaurService'
@@ -69,6 +70,7 @@ export default function DinossauroDetalhe() {
           <p className="cientifico">{dino.periodo}</p>
           <h1>{dino.nome}</h1>
           <p className="cientifico">{dino.nomeCientifico}</p>
+          <BotoesPronuncia nome={dino.nome} nomeCientifico={dino.nomeCientifico} />
           <CampoFicha rotulo="Período" valor={dino.periodo} />
           <CampoFicha rotulo="Dieta" valor={dino.dieta} />
           <CampoFicha rotulo={cfg.rotuloGrupo} valor={dino.familia} />

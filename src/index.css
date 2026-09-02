@@ -867,6 +867,362 @@ a {
   margin: 24px 0 8px;
 }
 
+/* —— Linha do tempo (página dedicada) —— */
+.linha-tempo-pagina {
+  max-width: 1100px;
+}
+
+.lt-hero {
+  margin-bottom: 8px;
+}
+
+.lt-hero-etiqueta {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--green-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lt-hero-texto {
+  max-width: 42rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.lt-hero-stats {
+  margin: 18px 0 0;
+  color: #dbe6d4;
+}
+
+.lt-hero-stats strong {
+  color: var(--green-2);
+  font-size: 1.35rem;
+}
+
+.lt-faixa {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 32px 0 40px;
+  padding: 20px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(18, 22, 18, 0.95), rgba(12, 15, 12, 0.88));
+}
+
+.lt-faixa-trilho {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 34px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e08a3c, #4a8fd4, var(--green));
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.lt-faixa-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 4px;
+  border-radius: 12px;
+  text-align: center;
+  color: var(--text);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.lt-faixa-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+.lt-faixa-ponto {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #0c0f0c;
+  box-shadow: 0 0 0 2px currentColor;
+  margin-bottom: 2px;
+}
+
+.lt-faixa-item--triassico {
+  color: #e08a3c;
+}
+
+.lt-faixa-item--jurassico {
+  color: #4a8fd4;
+}
+
+.lt-faixa-item--cretaceo {
+  color: var(--green-2);
+}
+
+.lt-faixa-item strong {
+  font-size: 1rem;
+}
+
+.lt-faixa-anos {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.lt-faixa-contagem {
+  font-size: 0.78rem;
+  color: #9aab92;
+}
+
+.lt-faixa-seta {
+  display: none;
+}
+
+.lt-carregando {
+  color: var(--muted);
+  margin: 24px 0;
+}
+
+.lt-periodo {
+  position: relative;
+  margin-bottom: 48px;
+  padding: 28px 28px 32px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  overflow: hidden;
+  scroll-margin-top: 96px;
+}
+
+.lt-periodo::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+}
+
+.lt-periodo--triassico::before {
+  background: linear-gradient(180deg, #e08a3c, #b86520);
+}
+
+.lt-periodo--jurassico::before {
+  background: linear-gradient(180deg, #4a8fd4, #2d5f9a);
+}
+
+.lt-periodo--cretaceo::before {
+  background: linear-gradient(180deg, var(--green-2), var(--green-dark));
+}
+
+.lt-periodo-cabecalho {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.lt-periodo-indice {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0.22;
+  letter-spacing: -0.04em;
+}
+
+.lt-periodo--triassico .lt-periodo-indice {
+  color: #e08a3c;
+  opacity: 0.35;
+}
+
+.lt-periodo--jurassico .lt-periodo-indice {
+  color: #4a8fd4;
+  opacity: 0.35;
+}
+
+.lt-periodo--cretaceo .lt-periodo-indice {
+  color: var(--green-2);
+  opacity: 0.35;
+}
+
+.lt-periodo-epoca {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lt-periodo-texto h2 {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+}
+
+.lt-periodo-resumo {
+  margin: 0;
+  max-width: 36rem;
+  color: #c5d0be;
+  line-height: 1.55;
+}
+
+.lt-periodo-lateral {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.lt-contagem {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.lt-ver-todos {
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.lt-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px;
+  border-radius: 14px;
+  border: 1px dashed var(--line);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.lt-vazio p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.lt-grade {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.lt-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #141914;
+  overflow: hidden;
+  color: inherit;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.lt-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(94, 163, 58, 0.45);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.lt-card-foto {
+  position: relative;
+  height: 130px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.5)),
+    radial-gradient(circle at 50% 30%, #4d7a32, #1a2a14 70%);
+  background-size: cover;
+  background-position: center;
+}
+
+.lt-card-foto .lt-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.lt-card-corpo {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lt-card-corpo h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.lt-card-corpo .cientifico {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.lt-card-corpo .dino-autor {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+}
+
+.lt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.lt-badge--pterossauro {
+  color: #8ec5ff;
+}
+
+.lt-badge--reptil_marinho {
+  color: #7ec8e8;
+}
+
+.lt-badge--mamifero {
+  color: #e8c08a;
+}
+
+.lt-badge--outro {
+  color: #c9a8ef;
+}
+
+.lt-dieta {
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lt-dieta--carnivoro {
+  background: rgba(200, 70, 60, 0.18);
+  color: #f09088;
+}
+
+.lt-dieta--herbivoro {
+  background: rgba(94, 163, 58, 0.2);
+  color: var(--green-2);
+}
+
+.lt-dieta--onivoro {
+  background: rgba(224, 138, 60, 0.18);
+  color: #e8b070;
+}
+
 .form-ficha {
   max-width: 860px;
   display: grid;
@@ -964,6 +1320,56 @@ a {
   gap: 10px;
   margin-top: 16px;
   align-items: center;
+}
+
+.pronuncia-grupo {
+  margin: 14px 0 6px;
+}
+
+.pronuncia-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.botao-pronuncia {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(94, 163, 58, 0.12);
+  color: var(--green-2);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.botao-pronuncia svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.botao-pronuncia:hover {
+  background: rgba(94, 163, 58, 0.22);
+  border-color: rgba(94, 163, 58, 0.45);
+}
+
+.botao-pronuncia.is-ativo {
+  background: rgba(94, 163, 58, 0.28);
+  border-color: var(--green);
+  transform: scale(1.02);
+}
+
+.pronuncia-erro {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #f09088;
 }
 
 .curtir-wrap--foto {
@@ -2205,6 +2611,21 @@ a {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .lt-grade {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .lt-periodo-cabecalho {
+    grid-template-columns: auto 1fr;
+  }
+
+  .lt-periodo-lateral {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .hero-trex {
     object-position: 58% 40%;
     transform-origin: 58% 42%;
@@ -2444,6 +2865,58 @@ a {
   .conteudo:not(.conteudo--home) {
     width: calc(100% - 24px);
     padding: 20px 0 56px;
+  }
+
+  .lt-faixa {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .lt-faixa-trilho {
+    display: none;
+  }
+
+  .lt-faixa-item {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .lt-faixa-seta {
+    display: none;
+  }
+
+  .lt-faixa-anos,
+  .lt-faixa-contagem {
+    margin-left: auto;
+  }
+
+  .lt-grade {
+    grid-template-columns: 1fr;
+  }
+
+  .lt-periodo {
+    padding: 20px 18px 24px;
+  }
+
+  .lt-periodo-cabecalho {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .lt-periodo-indice {
+    font-size: 1.8rem;
+  }
+
+  .lt-periodo-lateral {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
