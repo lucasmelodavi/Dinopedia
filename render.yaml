@@ -1,10 +1,3 @@
-databases:
-  - name: dinopedia-db
-    plan: free
-    postgresMajorVersion: "16"
-    databaseName: dinopedia
-    user: dinopedia
-
 services:
   - type: web
     name: dinopedia
@@ -19,8 +12,10 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: dinopedia-db
-          property: connectionString
+        sync: false
       - key: CORS_ORIGIN
         value: "*"
+      - key: GMAIL_EMAIL
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
